@@ -1,0 +1,7 @@
+C:\Users\Jota\CSharpEditor\CSharpEditor\bin\Release\CSharpEditor.exe
+C:\Users\Jota\CSharpEditor\CSharpEditor\bin\Release\CSharpEditor.pdb
+C:\Users\Jota\CSharpEditor\CSharpEditor\obj\x86\Release\CSharpEditor.CSharpEditorForm.resources
+C:\Users\Jota\CSharpEditor\CSharpEditor\obj\x86\Release\CSharpEditor.Properties.Resources.resources
+C:\Users\Jota\CSharpEditor\CSharpEditor\obj\x86\Release\CSharpEditor.csproj.GenerateResource.Cache
+C:\Users\Jota\CSharpEditor\CSharpEditor\obj\x86\Release\CSharpEditor.exe
+C:\Users\Jota\CSharpEditor\CSharpEditor\obj\x86\Release\CSharpEditor.pdb
