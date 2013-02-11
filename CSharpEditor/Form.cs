@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
@@ -136,7 +137,17 @@ namespace CSharpEditor
 
         private void saveFileButton_Click(object sender, EventArgs e)
         {
-            editorPane.SaveFile();
+            string path = @"C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\";
+            if(File.Exists(path))
+            {
+                File.Delete(path);
+            }
+            using (FileStream fs = File.Create(path+"save.cs"))
+            {
+                editorPane.SaveFile(fs, RichTextBoxStreamType.PlainText);
+            }
+            
+            
 
             Console.WriteLine("save");
         }
