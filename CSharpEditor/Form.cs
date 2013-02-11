@@ -19,11 +19,11 @@ namespace CSharpEditor
             InitializeComponent();
             // Instantiate listBoxAutoComplete object
             listBoxAutoComplete = new ListBox();
-            // Add the ListBox to the form. 
+            // Add the ListBox to the form 
             this.Controls.Add(listBoxAutoComplete);
             // Add status bar
             statusStrip.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel });
-            
+            defineButtonEvents();
         }
 
         [DllImport("Kernel32.dll")]
@@ -39,8 +39,6 @@ namespace CSharpEditor
         {
             Clear();
             StatusLine();
-
-
 
             // Detecting the dot key
             if (e.KeyData == Keys.OemPeriod)
@@ -69,13 +67,13 @@ namespace CSharpEditor
                 try
                 {
                     typeOfAWord = Type.GetType("System." + wordsInLine[wordsInLine.Length - 1]);
-                    Console.WriteLine(typeOfAWord + "- 2");
                 }
                 catch (ArgumentNullException)
                 {
                     Console.WriteLine("Argumento null");
                     return;
                 }
+                if (typeOfAWord == null) return;
 
                 if (!this.listBoxAutoComplete.Visible)
                 {
@@ -118,8 +116,8 @@ namespace CSharpEditor
             statusStrip.Items[0].Text = lnColString;
         }
         private void Clear()
-        {
-            this.listBoxAutoComplete.Hide();
+            {
+                this.listBoxAutoComplete.Hide();
         }
         private void editorPane_MouseClick(object sender, MouseEventArgs e)
         {
@@ -135,13 +133,56 @@ namespace CSharpEditor
         {
             StatusLine();
         }
-    }
 
-    class A
-    {
-        public A()
+        private void saveFileButton_Click(object sender, EventArgs e)
         {
+            editorPane.SaveFile();
 
+            Console.WriteLine("save");
+        }
+
+        private void loadFileButton_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine("load");
+        }
+
+        private void compileButton_click(object sender, EventArgs e)
+        {
+            Assembly ass=Assembly.GetAssembly(editorPane.GetType());
+            
+            Console.WriteLine("compileButton");
+        }
+
+        private void runButton_click(object sender, EventArgs e)
+        {
+            Console.WriteLine("runButton");
+        }
+
+        private void addAssemblyRefButton_click(object sender, EventArgs e)
+        {
+            Console.WriteLine("addAssemblyRefButton");
+        }
+
+
+        private void removeAssemblyRefButton_click(object sender, EventArgs e)
+        {
+            Console.WriteLine("removeAssemblyRefButton");
+        }
+
+        private void newFileButton_click(object sender, EventArgs e)
+        {
+            Console.WriteLine("newFileButton");
+        }
+
+        private void defineButtonEvents()
+        {
+            loadFileButton.Click += new System.EventHandler(this.loadFileButton_Click);
+            saveFileButton.Click += new System.EventHandler(this.saveFileButton_Click);
+            removeAssemblyRefButton.Click += new System.EventHandler(this.removeAssemblyRefButton_click);
+            addAssemblyRefButton.Click += new System.EventHandler(this.addAssemblyRefButton_click);
+            runButton.Click += new System.EventHandler(this.runButton_click);
+            compileButton.Click += new System.EventHandler(this.compileButton_click);
+            newFileButton.Click += new System.EventHandler(this.newFileButton_click);
         }
     }
 }
