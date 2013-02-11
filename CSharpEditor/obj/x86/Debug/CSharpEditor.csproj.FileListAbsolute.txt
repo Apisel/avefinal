@@ -15,3 +15,11 @@ C:\Users\Jota\CSharpEditor\CSharpEditor\obj\x86\Debug\CSharpEditor.csprojResolve
 C:\Users\Jota\CSharpEditor\CSharpEditor\obj\x86\Debug\CSharpEditor.CSharpEditorForm.resources
 C:\Users\Jota\CSharpEditor\CSharpEditor\obj\x86\Debug\CSharpEditor.Properties.Resources.resources
 C:\Users\Jota\CSharpEditor\CSharpEditor\obj\x86\Debug\CSharpEditor.csproj.GenerateResource.Cache
+C:\Users\Jota\AVE_FINAL\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.exe
+C:\Users\Jota\AVE_FINAL\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.pdb
+C:\Users\Jota\AVE_FINAL\avefinal\CSharpEditor\bin\Debug\CSharpEditor.exe
+C:\Users\Jota\AVE_FINAL\avefinal\CSharpEditor\bin\Debug\CSharpEditor.pdb
+C:\Users\Jota\AVE_FINAL\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.csprojResolveAssemblyReference.cache
+C:\Users\Jota\AVE_FINAL\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.CSharpEditorForm.resources
+C:\Users\Jota\AVE_FINAL\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.Properties.Resources.resources
+C:\Users\Jota\AVE_FINAL\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.csproj.GenerateResource.Cache

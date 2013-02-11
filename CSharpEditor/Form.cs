@@ -23,6 +23,7 @@ namespace CSharpEditor
             this.Controls.Add(listBoxAutoComplete);
             // Add status bar
             statusStrip.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel });
+            
         }
 
         [DllImport("Kernel32.dll")]
@@ -39,6 +40,8 @@ namespace CSharpEditor
             Clear();
             StatusLine();
 
+
+
             // Detecting the dot key
             if (e.KeyData == Keys.OemPeriod)
             {
@@ -46,18 +49,16 @@ namespace CSharpEditor
                 int currentLineIndex = editorPane.GetLineFromCharIndex(editorPane.SelectionStart);
 
                 string currentLine;
-                char[] charLine;
                 try
                 {
                     currentLine = this.editorPane.Lines[currentLineIndex];
-                    charLine = currentLine.ToCharArray(0, currentLine.Length);
                 }
-                catch (IndexOutOfRangeException)
+                catch(IndexOutOfRangeException)
                 {
                     return;
                 }
 
-                if (charLine.Length < 1 || charLine[charLine.Length - 1] == '.')
+                if (currentLine==null || currentLine[currentLine.Length-1] == '.')
                     return;
 
                 Console.WriteLine("Current line numb.: {0}, {1}", currentLineIndex + 1, currentLine);
@@ -67,17 +68,20 @@ namespace CSharpEditor
 
                 try
                 {
-                    typeOfAWord = Type.GetType(wordsInLine[wordsInLine.Length - 1]);
+                    typeOfAWord = Type.GetType("System." + wordsInLine[wordsInLine.Length - 1]);
+                    Console.WriteLine(typeOfAWord + "- 2");
                 }
                 catch (ArgumentNullException)
                 {
+                    Console.WriteLine("Argumento null");
                     return;
                 }
+
                 if (!this.listBoxAutoComplete.Visible)
                 {
                     this.listBoxAutoComplete.Items.Clear();
                     // Populate the Auto Complete list box
-                    this.listBoxAutoComplete.Items.Add("Olá " + ++_counter);
+                    //this.listBoxAutoComplete.Items.Add("Olá " + ++_counter);
 
                     foreach (MethodInfo mInfo in typeOfAWord.GetMethods())
                     {
@@ -130,6 +134,14 @@ namespace CSharpEditor
         private void editorPane_TextChanged(object sender, EventArgs e)
         {
             StatusLine();
+        }
+    }
+
+    class A
+    {
+        public A()
+        {
+
         }
     }
 }
