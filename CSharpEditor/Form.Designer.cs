@@ -48,6 +48,9 @@
             this.newFileButton = new System.Windows.Forms.ToolStripButton();
             this.loadFileButton = new System.Windows.Forms.ToolStripButton();
             this.saveFileButton = new System.Windows.Forms.ToolStripButton();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.openFileDialog2 = new System.Windows.Forms.OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -109,9 +112,9 @@
             // 
             // statusStrip
             // 
-            this.statusStrip.Location = new System.Drawing.Point(0, 701);
+            this.statusStrip.Location = new System.Drawing.Point(0, 556);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(1140, 22);
+            this.statusStrip.Size = new System.Drawing.Size(1028, 22);
             this.statusStrip.TabIndex = 3;
             // 
             // toolStrip1
@@ -132,14 +135,14 @@
             this.saveFileButton});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(1140, 25);
+            this.toolStrip1.Size = new System.Drawing.Size(1028, 25);
             this.toolStrip1.TabIndex = 4;
             this.toolStrip1.Text = "toolStrip1";
             // 
             // toolStripLabel1
             // 
             this.toolStripLabel1.Name = "toolStripLabel1";
-            this.toolStripLabel1.Size = new System.Drawing.Size(121, 22);
+            this.toolStripLabel1.Size = new System.Drawing.Size(114, 22);
             this.toolStripLabel1.Text = "Assembly References:";
             // 
             // assemblyRefsComboBox
@@ -173,7 +176,7 @@
             // toolStripLabel3
             // 
             this.toolStripLabel3.Name = "toolStripLabel3";
-            this.toolStripLabel3.Size = new System.Drawing.Size(40, 22);
+            this.toolStripLabel3.Size = new System.Drawing.Size(36, 22);
             this.toolStripLabel3.Text = "Build: ";
             // 
             // compileButton
@@ -182,7 +185,7 @@
             this.compileButton.Image = ((System.Drawing.Image)(resources.GetObject("compileButton.Image")));
             this.compileButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.compileButton.Name = "compileButton";
-            this.compileButton.Size = new System.Drawing.Size(65, 22);
+            this.compileButton.Size = new System.Drawing.Size(60, 22);
             this.compileButton.Text = "Compile...";
             // 
             // runButton
@@ -191,7 +194,7 @@
             this.runButton.Image = ((System.Drawing.Image)(resources.GetObject("runButton.Image")));
             this.runButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.runButton.Name = "runButton";
-            this.runButton.Size = new System.Drawing.Size(41, 22);
+            this.runButton.Size = new System.Drawing.Size(42, 22);
             this.runButton.Text = "Run...";
             // 
             // toolStripSeparator2
@@ -202,7 +205,7 @@
             // toolStripLabel2
             // 
             this.toolStripLabel2.Name = "toolStripLabel2";
-            this.toolStripLabel2.Size = new System.Drawing.Size(28, 22);
+            this.toolStripLabel2.Size = new System.Drawing.Size(27, 22);
             this.toolStripLabel2.Text = "File:";
             // 
             // newFileButton
@@ -229,14 +232,26 @@
             this.saveFileButton.Image = ((System.Drawing.Image)(resources.GetObject("saveFileButton.Image")));
             this.saveFileButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.saveFileButton.Name = "saveFileButton";
-            this.saveFileButton.Size = new System.Drawing.Size(44, 22);
+            this.saveFileButton.Size = new System.Drawing.Size(47, 22);
             this.saveFileButton.Text = "Save...";
+            // 
+            // saveFileDialog1
+            // 
+            this.saveFileDialog1.DefaultExt = "cs";
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            // 
+            // openFileDialog2
+            // 
+            this.openFileDialog2.FileName = "openFileDialog2";
             // 
             // CSharpEditorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1140, 723);
+            this.ClientSize = new System.Drawing.Size(1028, 578);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.splitContainer1);
@@ -277,6 +292,9 @@
         private System.Windows.Forms.ToolStripButton newFileButton;
         private System.Windows.Forms.ToolStripButton loadFileButton;
         private System.Windows.Forms.ToolStripButton saveFileButton;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.OpenFileDialog openFileDialog2;
         
     }
 }

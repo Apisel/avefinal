@@ -20,6 +20,7 @@ namespace CSharpEditor.CompilerServices
         /// <param name="exeFile">File path to create external executable file</param>
         /// <param name="assemblyName">File path to create external assembly file</param>
         /// <param name="resourceFiles">Required resource files to compile the code</param>
+        /// 
         /// <param name="errors">String variable to store any errors occurred during the process</param>
         /// <returns>Return TRUE if successfully compiled the code, else return FALSE</returns>
         public static bool CompileCode(CodeDomProvider codeProvider, string sourceCode, string sourceFile, 
