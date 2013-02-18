@@ -106,6 +106,14 @@ namespace CSharpEditor
         private void editorPane_TextChanged(object sender, EventArgs e)
         {
             StatusLine();
+            String line;
+            getCurrentLine(out line);
+            if(line.Length>0 && line[line.Length-1]==';')
+            {
+                String[] s = line.Split('=');
+                getTypeAndName(s[0]);
+        }
+
         }
 
         private void saveFileButton_Click(object sender, EventArgs e)
@@ -196,7 +204,7 @@ namespace CSharpEditor
             Console.WriteLine("removeAssemblyRefButton");
         }
 
-        private void newFileButto_click(object sender, EventArgs e)
+        private void newFileButton_click(object sender, EventArgs e)
         {
             lastLocationSaved = null;
             editorPane.Clear();
@@ -281,6 +289,15 @@ namespace CSharpEditor
         {
             String[] x = typeAndWord.Split(' ');
 
+            if(x.Length>1)
+            {
+                variableTypesInfo.Add(x[1].TrimEnd(' ', ';'), Type.GetType(x[0]));
+
+                Console.WriteLine("Type - " + x[0]);
+                Console.WriteLine("Name - " + x[1].TrimEnd(' ',';'));
+            
+                //Console.WriteLine(variableTypesInfo.
+            }
 
         }
     }

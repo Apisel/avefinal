@@ -32,3 +32,11 @@ C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\avef
 C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.Properties.Resources.resources
 C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\avefinal\CSharpEditor\obj\x86\Debug\GenerateResource.read.1.tlog
 C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\avefinal\CSharpEditor\obj\x86\Debug\GenerateResource.write.1.tlog
+C:\Users\Pedro\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.exe
+C:\Users\Pedro\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.pdb
+C:\Users\Pedro\AVE\avefinal\CSharpEditor\bin\Debug\CSharpEditor.exe
+C:\Users\Pedro\AVE\avefinal\CSharpEditor\bin\Debug\CSharpEditor.pdb
+C:\Users\Pedro\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.csprojResolveAssemblyReference.cache
+C:\Users\Pedro\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.CSharpEditorForm.resources
+C:\Users\Pedro\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.Properties.Resources.resources
+C:\Users\Pedro\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.csproj.GenerateResource.Cache
