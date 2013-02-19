@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
@@ -139,7 +140,7 @@ namespace CSharpEditor
             openFileDialog1.Filter = "cs files (*.cs)|*.cs|All files (*.*)|*.*";
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
-
+                lastLocationSaved = openFileDialog1.FileName;
                 using (Stream fs = openFileDialog1.OpenFile())
                 {
                     editorPane.LoadFile(fs, RichTextBoxStreamType.PlainText);
@@ -155,33 +156,98 @@ namespace CSharpEditor
             CodeDomProvider codeProvider = new CSharpCodeProvider();
             string sourceCode = editorPane.Text;
             string sourceFile = null;
-            string exeFile = lastLocationSaved+".exe";
-            string assemblyName = null;
             string[] resourceFiles = null;
 
             string errors = null;
             CompilerResults compilerResults;
 
-            CompilerServices.Compiler.CompileCode(codeProvider,sourceCode,sourceFile,exeFile,
-               assemblyName,resourceFiles,referencedAssemblies, out errors, out compilerResults);
+            if (lastLocationSaved != null)
+            {
+                bool comp;
+                using (StreamReader fs = new StreamReader(lastLocationSaved))
+                {
+                    string aux = fs.ReadToEnd();
+                    string aux2 = editorPane.Text;
+                    aux = Regex.Replace(aux, @"\s", "");
+                    aux2 = Regex.Replace(aux2, @"\s", "");
+                    comp = aux.Equals(aux2);
+                }
+            
+                if(comp)
+                {
+                    int i = editorPane.Text.IndexOf("Main");
+                    if (i != -1) //existe metodo main
+                    {
 
-            lastLocationCompiled = lastLocationSaved + ".exe";
+                        string exeFile = lastLocationSaved.Replace("cs","exe");
+
+
+                        if (CompilerServices.Compiler.CompileCode(codeProvider, sourceCode, sourceFile, exeFile,
+                                                                  null, null, referencedAssemblies, out errors,
+                                                                  out compilerResults))
+                        {
+                            lastLocationCompiled = exeFile;
+                            errorsList.Clear();
+                            errorsList.AppendText("Compilado com sucesso");
+                        }
+                        else
+                        {
+                            errorsList.Clear();
+                            errorsList.AppendText(errors);
+                        }
+                    }
+                    else
+                    {
+                        string assemblyName = lastLocationSaved.Replace("cs", "dll"); ;
+
+
+                        if (CompilerServices.Compiler.CompileCode(codeProvider, sourceCode, sourceFile, null,
+                                                                  assemblyName, null, referencedAssemblies, out errors,
+                                                                  out compilerResults))
+                        {
+                            lastLocationCompiled = assemblyName;
+                            errorsList.Clear();
+                            errorsList.AppendText("Compilado com sucesso");
+                        }
+                       
+                    }
+                }else
+                {
+                    errorsList.Clear();
+                    errorsList.AppendText("Guarde o Ficheiro Primeiro!");
+                }
+
+            }
+            else
+            {
+                errorsList.Clear();
+                errorsList.AppendText("Guarde o Ficheiro Primeiro!");
+            }
+
+
             Console.WriteLine("compileButton");
         }
 
         private void runButton_click(object sender, EventArgs e)
         {
 
-            //if (File.Exists(lastLocationCompiled) && File.)
+            if (lastLocationCompiled!=null && lastLocationCompiled.IndexOf("exe")!=-1)
             {
                 var proc = new Process();
-
-                proc.StartInfo.FileName = "something.exe";
+                proc.StartInfo.FileName = lastLocationCompiled;
                 proc.Start();
+
+                errorsList.Clear();
+                errorsList.AppendText("Programa Executado");
+
                 proc.WaitForExit();
                 var exitCode = proc.ExitCode;
                 proc.Close();
                 Console.WriteLine("runButton");
+            }else
+            {
+                errorsList.Clear();
+                errorsList.AppendText("O ficheiro destino não pode ser executado\n (é um ficheiro dll?)");
             }
         }
 
@@ -230,8 +296,7 @@ namespace CSharpEditor
             newFileButton.Click += new System.EventHandler(this.newFileButton_click);
             listBoxAutoComplete.Click += new System.EventHandler(this.listBoxAutoComplete_Click);
         }
-
-
+        
         private void getCurrentLine(out String line)
         {
             int currentLineIndex = editorPane.GetLineFromCharIndex(editorPane.SelectionStart);
