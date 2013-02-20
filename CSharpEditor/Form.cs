@@ -21,9 +21,9 @@ namespace CSharpEditor
         private String lastLocationSaved = null;
         private String lastLocationCompiled = null;
         private Dictionary<String, Object> variableTypesInfo = new Dictionary<String, Object>();
-        
-        string[] referencedAssemblies;
-        
+
+        List<string> referencedAssemblies = new List<string>();
+
 
         public CSharpEditorForm()
         {
@@ -109,11 +109,11 @@ namespace CSharpEditor
             StatusLine();
             String line;
             getCurrentLine(out line);
-            if(line.Length>0 && line[line.Length-1]==';')
+            if (line.Length > 0 && line[line.Length - 1] == ';')
             {
                 String[] s = line.Split('=');
                 getTypeAndName(s[0]);
-        }
+            }
 
         }
 
@@ -151,39 +151,42 @@ namespace CSharpEditor
 
         private void compileButton_click(object sender, EventArgs e)
         {
-           
+
             //Assembly ass = Assembly.GetAssembly(editorPane.GetType());
             CodeDomProvider codeProvider = new CSharpCodeProvider();
             string sourceCode = editorPane.Text;
             string sourceFile = null;
             string[] resourceFiles = null;
+            string[] refAssemblies = referencedAssemblies.ToArray();
 
             string errors = null;
             CompilerResults compilerResults;
-
+            
             if (lastLocationSaved != null)
             {
                 bool comp;
-                using (StreamReader fs = new StreamReader(lastLocationSaved))
+                using (TextReader fs = new StreamReader(lastLocationSaved,System.Text.Encoding.Default))
                 {
                     string aux = fs.ReadToEnd();
                     string aux2 = editorPane.Text;
                     aux = Regex.Replace(aux, @"\s", "");
                     aux2 = Regex.Replace(aux2, @"\s", "");
+                    aux = Regex.Replace(aux, @"\r", "");
+                    aux2 = Regex.Replace(aux2, @"\r", "");
                     comp = aux.Equals(aux2);
                 }
-            
-                if(comp)
+
+                if (comp)
                 {
                     int i = editorPane.Text.IndexOf("Main");
                     if (i != -1) //existe metodo main
                     {
 
-                        string exeFile = lastLocationSaved.Replace("cs","exe");
+                        string exeFile = lastLocationSaved.Replace("cs", "exe");
 
 
                         if (CompilerServices.Compiler.CompileCode(codeProvider, sourceCode, sourceFile, exeFile,
-                                                                  null, null, referencedAssemblies, out errors,
+                                                                  null, resourceFiles, refAssemblies, out errors,
                                                                   out compilerResults))
                         {
                             lastLocationCompiled = exeFile;
@@ -202,16 +205,17 @@ namespace CSharpEditor
 
 
                         if (CompilerServices.Compiler.CompileCode(codeProvider, sourceCode, sourceFile, null,
-                                                                  assemblyName, null, referencedAssemblies, out errors,
+                                                                  assemblyName, resourceFiles, refAssemblies, out errors,
                                                                   out compilerResults))
                         {
                             lastLocationCompiled = assemblyName;
                             errorsList.Clear();
                             errorsList.AppendText("Compilado com sucesso");
                         }
-                       
+
                     }
-                }else
+                }
+                else
                 {
                     errorsList.Clear();
                     errorsList.AppendText("Guarde o Ficheiro Primeiro!");
@@ -224,14 +228,13 @@ namespace CSharpEditor
                 errorsList.AppendText("Guarde o Ficheiro Primeiro!");
             }
 
-
             Console.WriteLine("compileButton");
         }
 
         private void runButton_click(object sender, EventArgs e)
         {
 
-            if (lastLocationCompiled!=null && lastLocationCompiled.IndexOf("exe")!=-1)
+            if (lastLocationCompiled != null && lastLocationCompiled.IndexOf("exe") != -1)
             {
                 var proc = new Process();
                 proc.StartInfo.FileName = lastLocationCompiled;
@@ -244,7 +247,8 @@ namespace CSharpEditor
                 var exitCode = proc.ExitCode;
                 proc.Close();
                 Console.WriteLine("runButton");
-            }else
+            }
+            else
             {
                 errorsList.Clear();
                 errorsList.AppendText("O ficheiro destino não pode ser executado\n (é um ficheiro dll?)");
@@ -253,33 +257,65 @@ namespace CSharpEditor
 
         private void addAssemblyRefButton_click(object sender, EventArgs e)
         {
-            
+
             openFileDialog2.FileName = "";
             openFileDialog2.Filter = "dll files (*.dll)|*.dll|All files (*.*)|*.*";
             openFileDialog2.Multiselect = true;
             openFileDialog2.ShowDialog();
 
-            referencedAssemblies = openFileDialog2.FileNames;
+            foreach (string fileName in openFileDialog2.FileNames)
+            {
+                if (referencedAssemblies.IndexOf(fileName)==-1)
+                {
+                    referencedAssemblies.Add(fileName);
+                    assemblyRefsComboBox.Items.Add(fileName.Substring(fileName.LastIndexOf("\\")));
+                }
+            }
+
 
             Console.WriteLine("addAssemblyRefButton");
         }
-        
+
         private void removeAssemblyRefButton_click(object sender, EventArgs e)
         {
-            referencedAssemblies = null;
+            
+            var selected = assemblyRefsComboBox.SelectedItem;
+            if (selected != null)
+            {
+
+                foreach (var path in referencedAssemblies)
+                {
+                    if (path.IndexOf(selected.ToString())!=-1)
+                    {
+                        referencedAssemblies.Remove(path);
+                        assemblyRefsComboBox.Items.Remove(selected);
+                        assemblyRefsComboBox.Text = "";
+                        break;
+                    }
+                }
+                
+            }
             Console.WriteLine("removeAssemblyRefButton");
+        }
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
+        {
+            referencedAssemblies.Clear();
+            assemblyRefsComboBox.Items.Clear();
+            assemblyRefsComboBox.Text = "";
         }
 
         private void newFileButton_click(object sender, EventArgs e)
         {
             lastLocationSaved = null;
+            lastLocationCompiled = null;
             editorPane.Clear();
             Console.WriteLine("newFileButton");
         }
 
         private void listBoxAutoComplete_Click(object sender, EventArgs e)
         {
-            int index =listBoxAutoComplete.SelectedIndex;
+            int index = listBoxAutoComplete.SelectedIndex;
             int i = editorPane.GetLineFromCharIndex(editorPane.SelectionStart);
             editorPane.AppendText(listBoxAutoComplete.Items[index].ToString());
             Clear();
@@ -296,12 +332,12 @@ namespace CSharpEditor
             newFileButton.Click += new System.EventHandler(this.newFileButton_click);
             listBoxAutoComplete.Click += new System.EventHandler(this.listBoxAutoComplete_Click);
         }
-        
+
         private void getCurrentLine(out String line)
         {
             int currentLineIndex = editorPane.GetLineFromCharIndex(editorPane.SelectionStart);
 
-          try
+            try
             {
                 line = this.editorPane.Lines[currentLineIndex];
             }
@@ -315,7 +351,7 @@ namespace CSharpEditor
         private void displayAutoCompleteBox(String currentLine)
         {
             // Get current line
-            
+
 
             if (currentLine == null || currentLine[currentLine.Length - 1] == '.')
                 return;
@@ -354,16 +390,17 @@ namespace CSharpEditor
         {
             String[] x = typeAndWord.Split(' ');
 
-            if(x.Length>1)
+            if (x.Length > 1)
             {
                 variableTypesInfo.Add(x[1].TrimEnd(' ', ';'), Type.GetType(x[0]));
 
                 Console.WriteLine("Type - " + x[0]);
-                Console.WriteLine("Name - " + x[1].TrimEnd(' ',';'));
-            
+                Console.WriteLine("Name - " + x[1].TrimEnd(' ', ';'));
+
                 //Console.WriteLine(variableTypesInfo.
             }
 
         }
+        
     }
 }

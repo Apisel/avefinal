@@ -39,6 +39,7 @@
             this.assemblyRefsComboBox = new System.Windows.Forms.ToolStripComboBox();
             this.addAssemblyRefButton = new System.Windows.Forms.ToolStripButton();
             this.removeAssemblyRefButton = new System.Windows.Forms.ToolStripButton();
+            this.removeall = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel3 = new System.Windows.Forms.ToolStripLabel();
             this.compileButton = new System.Windows.Forms.ToolStripButton();
@@ -65,7 +66,7 @@
             this.editorPane.Font = new System.Drawing.Font("Courier New", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.editorPane.Location = new System.Drawing.Point(12, 3);
             this.editorPane.Name = "editorPane";
-            this.editorPane.Size = new System.Drawing.Size(1116, 462);
+            this.editorPane.Size = new System.Drawing.Size(1004, 462);
             this.editorPane.TabIndex = 0;
             this.editorPane.Text = "";
             this.editorPane.MouseClick += new System.Windows.Forms.MouseEventHandler(this.editorPane_MouseClick);
@@ -124,6 +125,7 @@
             this.assemblyRefsComboBox,
             this.addAssemblyRefButton,
             this.removeAssemblyRefButton,
+            this.removeall,
             this.toolStripSeparator1,
             this.toolStripLabel3,
             this.compileButton,
@@ -167,6 +169,16 @@
             this.removeAssemblyRefButton.Name = "removeAssemblyRefButton";
             this.removeAssemblyRefButton.Size = new System.Drawing.Size(23, 22);
             this.removeAssemblyRefButton.Text = "-";
+            // 
+            // removeall
+            // 
+            this.removeall.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.removeall.Image = ((System.Drawing.Image)(resources.GetObject("removeall.Image")));
+            this.removeall.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.removeall.Name = "removeall";
+            this.removeall.Size = new System.Drawing.Size(64, 22);
+            this.removeall.Text = "Remove All";
+            this.removeall.Click += new System.EventHandler(this.toolStripButton1_Click);
             // 
             // toolStripSeparator1
             // 
@@ -295,6 +307,7 @@
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.OpenFileDialog openFileDialog2;
+        private System.Windows.Forms.ToolStripButton removeall;
         
     }
 }
