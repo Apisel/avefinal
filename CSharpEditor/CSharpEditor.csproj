@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="A.cs" />
     <Compile Include="Class1.cs" />
     <Compile Include="CompilerServices\Compiler.cs" />
     <Compile Include="Form.cs">

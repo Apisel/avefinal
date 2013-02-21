@@ -12,18 +12,17 @@ using Microsoft.CSharp;
 
 namespace CSharpEditor
 {
+
     public partial class CSharpEditorForm : Form
     {
         private ListBox listBoxAutoComplete;
         private ToolStripStatusLabel toolStripStatusLabel = new ToolStripStatusLabel();
         private Point caretPos;
-        private static int _counter;
         private String lastLocationSaved = null;
         private String lastLocationCompiled = null;
-        private Dictionary<String, Object> variableTypesInfo = new Dictionary<String, Object>();
+        private Dictionary<String, Type> variableTypesInfo = new Dictionary<String, Type>();
 
         List<string> referencedAssemblies = new List<string>();
-
 
         public CSharpEditorForm()
         {
@@ -35,6 +34,7 @@ namespace CSharpEditor
             // Add status bar
             statusStrip.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel });
             defineButtonEvents();
+
         }
 
         [DllImport("Kernel32.dll")]
@@ -57,13 +57,9 @@ namespace CSharpEditor
 
             // Detecting the dot key
             if (key == Keys.OemPeriod)
+            {
                 displayAutoCompleteBox(line);
-            else
-                if (key == Keys.Oemcomma)
-                {
-                    String[] s = line.Split('=');
-                    getTypeAndName(s[0]);
-                }
+            }
         }
 
 
@@ -114,7 +110,6 @@ namespace CSharpEditor
                 String[] s = line.Split('=');
                 getTypeAndName(s[0]);
             }
-
         }
 
         private void saveFileButton_Click(object sender, EventArgs e)
@@ -358,17 +353,32 @@ namespace CSharpEditor
 
             String[] wordsInLine = currentLine.Split('.');
             Type typeOfAWord;
+            
 
-            try
+            //if (variableTypesInfo.TryGetValue(wordsInLine[wordsInLine.Length - 1], out typeOfAWord))
+            if (variableTypesInfo.ContainsKey(wordsInLine[wordsInLine.Length - 1]))
             {
-                typeOfAWord = Type.GetType("System." + wordsInLine[wordsInLine.Length - 1]);
+                typeOfAWord = variableTypesInfo[wordsInLine[wordsInLine.Length - 1]];//(Type)t;
+                Console.WriteLine("Referencia " + wordsInLine[wordsInLine.Length - 1] + " do tipo -> " + typeOfAWord);
             }
-            catch (ArgumentNullException)
+            else
             {
-                Console.WriteLine("Argumento null");
-                return;
+                try
+                {
+                    typeOfAWord = Type.GetType("System." + wordsInLine[wordsInLine.Length - 1]);
+                    typeOfAWord = getType(wordsInLine[wordsInLine.Length - 1]);
+                    //Ver se é de um tipo definido no editorPane
+                }
+                catch (ArgumentNullException)
+                {
+                    Console.WriteLine("Argumento null");
+                    return;
+                }
+                
             }
             if (typeOfAWord == null) return;
+            
+            
 
             if (!this.listBoxAutoComplete.Visible)
             {
@@ -389,17 +399,31 @@ namespace CSharpEditor
         private void getTypeAndName(String typeAndWord)
         {
             String[] x = typeAndWord.Split(' ');
-
+            
             if (x.Length > 1)
             {
-                variableTypesInfo.Add(x[1].TrimEnd(' ', ';'), Type.GetType(x[0]));
+                String key=x[1].TrimEnd(' ', ';');
+                if(!variableTypesInfo.ContainsKey(key))
+                variableTypesInfo.Add(key, Type.GetType("System."+x[0]));
 
                 Console.WriteLine("Type - " + x[0]);
                 Console.WriteLine("Name - " + x[1].TrimEnd(' ', ';'));
-
-                //Console.WriteLine(variableTypesInfo.
             }
 
+        }
+
+        private Type getType(String type)
+        {
+            //percorrer os using para ver se é um tipo de lá definido
+
+            //editorPane.Text.IndexOf();
+            
+            Type.GetType(/*string do using*/type);
+        }
+
+        private void clearDictionary()
+        {
+            variableTypesInfo.Clear();
         }
         
     }

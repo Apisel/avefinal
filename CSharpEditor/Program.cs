@@ -13,6 +13,9 @@ namespace CSharpEditor
         [STAThread]
         static void Main()
         {
+            String s = "using System;";
+            Console.WriteLine(s.Split()[1]);
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new CSharpEditorForm());
