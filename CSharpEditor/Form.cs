@@ -425,6 +425,27 @@ namespace CSharpEditor
         {
             variableTypesInfo.Clear();
         }
-        
+
+        public void CreateAppDomain()
+        {
+            var setup = new AppDomainSetup
+            {
+                ApplicationName = "secondApp",
+                ApplicationBase = Directory.GetCurrentDirectory(),
+                ShadowCopyFiles = "true",
+                ShadowCopyDirectories = Directory.GetCurrentDirectory(),
+                CachePath = Directory.GetCurrentDirectory()
+            };
+
+            MyAppDomain ap;
+            AppDomain ad = AppDomain.CreateDomain("compileDomain", null, setup);
+            ap =
+            (MyAppDomain)ad.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "CSharpEditor.MyAppDomain");
+
+
+
+            AppDomain.Unload(ad);
+        }
+
     }
 }

@@ -40,3 +40,5 @@ C:\Users\Pedro\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.csprojResolv
 C:\Users\Pedro\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.CSharpEditorForm.resources
 C:\Users\Pedro\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.Properties.Resources.resources
 C:\Users\Pedro\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.csproj.GenerateResource.Cache
+C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.exe
+C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.pdb
