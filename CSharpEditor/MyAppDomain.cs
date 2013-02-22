@@ -1,4 +1,5 @@
 ﻿using System;
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -9,22 +10,25 @@ namespace CSharpEditor
 {
     class MyAppDomain : MarshalByRefObject
     {
-        public IEnumerable<string> getTypes(String path)
+
+        private Assembly ass;
+
+        public IEnumerable<String> getTypes(String path)
         {
            System.Reflection.Assembly o = System.Reflection.Assembly.Load(path);
            foreach (var typeName in o.GetTypes())
            {
-               yield return typeName.Name;
+               yield return "Type: "+typeName.Name;
            }
         }
 
-        public IEnumerable<String> getTypeEvents(Type type, bool isStatic)
+        public void loadAssembly(String exeFilePath) 
         {
+            ass = Assembly.LoadFrom(exeFilePath);
+        }
 
-            BindingFlags bf = BindingFlags.Public;
-            if (isStatic) bf = bf | BindingFlags.Static;
-            else bf = bf | BindingFlags.Instance;
-
+        private IEnumerable<String> getTypeEvents(Type type,BindingFlags bf)
+        {
             foreach (var evt in type.GetEvents(bf))
             {
                 yield return "Event:"+ evt.Name;
@@ -32,12 +36,8 @@ namespace CSharpEditor
             
         }
 
-        public IEnumerable<String> getTypeFields(Type type, bool isStatic)
+        private IEnumerable<String> getTypeFields(Type type, BindingFlags bf)
         {
-
-            BindingFlags bf = BindingFlags.Public;
-            if (isStatic) bf = bf | BindingFlags.Static;
-            else bf = bf | BindingFlags.Instance;
 
             foreach (var f in type.GetFields(bf))
             {
@@ -46,13 +46,8 @@ namespace CSharpEditor
 
         }
 
-        public IEnumerable<string> getTypeMethods(Type type, bool isStatic)
+        private IEnumerable<String> getTypeMethods(Type type, BindingFlags bf)
         {
-
-            BindingFlags bf = BindingFlags.Public;
-            if (isStatic) bf = bf | BindingFlags.Static;
-            else bf = bf | BindingFlags.Instance;
-
             String aux;
             foreach (var methodName in type.GetMethods(bf))
             {
@@ -68,12 +63,8 @@ namespace CSharpEditor
 
         }
 
-        public IEnumerable<String> getTypeProperties (Type type, bool isStatic)
+        private IEnumerable<String> getTypeProperties(Type type, BindingFlags bf)
         {
-
-            BindingFlags bf = BindingFlags.Public;
-            if (isStatic) bf = bf | BindingFlags.Static;
-            else bf = bf | BindingFlags.Instance;
 
             String aux;
             foreach (var prop in type.GetProperties(bf))
@@ -90,15 +81,35 @@ namespace CSharpEditor
 
         }
 
-        public IEnumerable<String> getTypeNestedTypes(Type type, bool isSatic)
+        private IEnumerable<String> getTypeNestedTypes(Type type, BindingFlags bf)
         {
-            
-            foreach (var nt in type.GetNestedTypes())
+            foreach (var nt in type.GetNestedTypes(bf))
             {
                 yield return "Nested Type: " +nt.Name;
             }
+        }
+
+        public String[] getMembers(Type fullType, bool isStatic)
+        {
+            BindingFlags bf = BindingFlags.Public;
+            if (isStatic) bf = bf | BindingFlags.Static;
+            else bf = bf | BindingFlags.Instance;
+
+            List<String> membersList=new List<String>();
+
+            membersList.AddRange(getTypeEvents(type, bf));
+            membersList.AddRange(getTypeFields(type, bf));
+            membersList.AddRange(getTypeMethods(type, bf));
+            membersList.AddRange(getTypeProperties(type, bf));
+            membersList.AddRange(getTypeNestedTypes(type, bf));
+
+            return membersList.ToArray();
 
         }
-        
+
+        public bool checkType(String type)
+        {
+           return ass.GetType(type)!=null;
+        }
     }
 }

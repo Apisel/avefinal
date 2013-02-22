@@ -21,8 +21,8 @@ namespace CSharpEditor
         private String lastLocationSaved = null;
         private String lastLocationCompiled = null;
         private Dictionary<String, Type> variableTypesInfo = new Dictionary<String, Type>();
+        private List<string> referencedAssemblies = new List<string>();
 
-        List<string> referencedAssemblies = new List<string>();
 
         public CSharpEditorForm()
         {
@@ -34,6 +34,8 @@ namespace CSharpEditor
             // Add status bar
             statusStrip.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel });
             defineButtonEvents();
+
+            //TODO verifyIfTypeIsDefinedOnAssemblyReferences(String type)
 
         }
 
@@ -54,7 +56,6 @@ namespace CSharpEditor
             getCurrentLine(out line);
             Keys key = e.KeyData;
 
-
             // Detecting the dot key
             if (key == Keys.OemPeriod)
             {
@@ -71,8 +72,8 @@ namespace CSharpEditor
             caretLoc.Y += (int)Math.Ceiling(this.editorPane.Font.GetHeight()) * 2 + 13;
             caretLoc.X += 20;
             this.listBoxAutoComplete.Location = caretLoc;
-            this.listBoxAutoComplete.Height = 100;
-            this.listBoxAutoComplete.Width = 160;
+            this.listBoxAutoComplete.Height = 120;
+            this.listBoxAutoComplete.Width = 230;
             this.listBoxAutoComplete.BringToFront();
             this.listBoxAutoComplete.Show();
         }
@@ -156,11 +157,11 @@ namespace CSharpEditor
 
             string errors = null;
             CompilerResults compilerResults;
-            
+
             if (lastLocationSaved != null)
             {
                 bool comp;
-                using (TextReader fs = new StreamReader(lastLocationSaved,System.Text.Encoding.Default))
+                using (TextReader fs = new StreamReader(lastLocationSaved, System.Text.Encoding.Default))
                 {
                     string aux = fs.ReadToEnd();
                     string aux2 = editorPane.Text;
@@ -260,7 +261,7 @@ namespace CSharpEditor
 
             foreach (string fileName in openFileDialog2.FileNames)
             {
-                if (referencedAssemblies.IndexOf(fileName)==-1)
+                if (referencedAssemblies.IndexOf(fileName) == -1)
                 {
                     referencedAssemblies.Add(fileName);
                     assemblyRefsComboBox.Items.Add(fileName.Substring(fileName.LastIndexOf("\\")));
@@ -273,14 +274,14 @@ namespace CSharpEditor
 
         private void removeAssemblyRefButton_click(object sender, EventArgs e)
         {
-            
+
             var selected = assemblyRefsComboBox.SelectedItem;
             if (selected != null)
             {
 
                 foreach (var path in referencedAssemblies)
                 {
-                    if (path.IndexOf(selected.ToString())!=-1)
+                    if (path.IndexOf(selected.ToString()) != -1)
                     {
                         referencedAssemblies.Remove(path);
                         assemblyRefsComboBox.Items.Remove(selected);
@@ -288,7 +289,7 @@ namespace CSharpEditor
                         break;
                     }
                 }
-                
+
             }
             Console.WriteLine("removeAssemblyRefButton");
         }
@@ -353,7 +354,7 @@ namespace CSharpEditor
 
             String[] wordsInLine = currentLine.Split('.');
             Type typeOfAWord;
-            
+
 
             //if (variableTypesInfo.TryGetValue(wordsInLine[wordsInLine.Length - 1], out typeOfAWord))
             if (variableTypesInfo.ContainsKey(wordsInLine[wordsInLine.Length - 1]))
@@ -374,11 +375,11 @@ namespace CSharpEditor
                     Console.WriteLine("Argumento null");
                     return;
                 }
-                
+
             }
             if (typeOfAWord == null) return;
-            
-            
+
+
 
             if (!this.listBoxAutoComplete.Visible)
             {
@@ -387,10 +388,15 @@ namespace CSharpEditor
                 // Populate the Auto Complete list box
                 //this.listBoxAutoComplete.Items.Add("Olá " + ++_counter);
 
+                foreach (String s in MyAppDomain.getMembers(typeOfAWord, false))
+                    this.listBoxAutoComplete.Items.Add(s);
+
+                /*
                 foreach (MethodInfo mInfo in typeOfAWord.GetMethods())
                 {
                     this.listBoxAutoComplete.Items.Add(mInfo.Name);
                 }
+                 * */
                 // Display the Auto Complete list box
                 DisplayAutoCompleteList();
             }
@@ -399,34 +405,66 @@ namespace CSharpEditor
         private void getTypeAndName(String typeAndWord)
         {
             String[] x = typeAndWord.Split(' ');
-            
+
             if (x.Length > 1)
             {
-                String key=x[1].TrimEnd(' ', ';');
-                if(!variableTypesInfo.ContainsKey(key))
-                variableTypesInfo.Add(key, Type.GetType("System."+x[0]));
-
-                Console.WriteLine("Type - " + x[0]);
-                Console.WriteLine("Name - " + x[1].TrimEnd(' ', ';'));
+                String key = x[1].TrimEnd(' ', ';');
+                if (!variableTypesInfo.ContainsKey(key))
+                {
+                    //usar o getType
+                    variableTypesInfo.Add(key, Type.GetType("System." + x[0]));
+                }
             }
-
         }
 
         private Type getType(String type)
         {
             //percorrer os using para ver se é um tipo de lá definido
-
-            //editorPane.Text.IndexOf();
+            Match match = Regex.Match(editorPane.Text, "using *[A-Za-z1-9.]*");
+            String toCompare;
             
-            Type.GetType(/*string do using*/type);
+            while(match.Success)
+            {
+                toCompare = Regex.Replace(match.Value, "using *", "");
+                toCompare = toCompare.TrimEnd(' ', ';');
+
+                //TODO Comparação
+
+                match.NextMatch();
+            }
+            /* foreach(String s in editorPane.Lines)
+            {
+                foreach (String usingCondition in s.Split(';'))
+                {
+                    match = Regex.Match(usingCondition, "using *[A-Za-z1-9]*");
+                    String[] aux= match.Value.Split(' ');
+                    if (Type.GetType(aux[1] + type) != null) ;
+
+                }
+            }
+             */
+
+
+            return Type.GetType(/*string do using*/type);
         }
+
+        private void loadAssemblies()
+        {
+            
+        }
+
+        private void unloadAssemblies()
+        {
+            AppDomain.Unload(appDomain);
+        }
+
 
         private void clearDictionary()
         {
             variableTypesInfo.Clear();
         }
 
-        public void CreateAppDomain()
+        public void verifyIfTypeIsDefinedOnAssemblyReferences(String type)
         {
             var setup = new AppDomainSetup
             {
@@ -437,14 +475,29 @@ namespace CSharpEditor
                 CachePath = Directory.GetCurrentDirectory()
             };
 
-            MyAppDomain ap;
+            MyAppDomain appDomain = new MyAppDomain();
             AppDomain ad = AppDomain.CreateDomain("compileDomain", null, setup);
-            ap =
+            appDomain =
             (MyAppDomain)ad.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "CSharpEditor.MyAppDomain");
+            
+            try
+            {
+                appDomain.loadAssembly(lastLocationCompiled);
+            }
+            catch (ArgumentNullException)
+            {
+                errorsList.Clear();
+                errorsList.AppendText("Assembly não encontrado");
+            }
 
+
+            //em principio é para fazer introspeccao 
+            //Possivelmente as referencias AssemblyReferences
 
 
             AppDomain.Unload(ad);
+
+            //possivel que retorne um resultado booleano ou o tipo
         }
 
     }
