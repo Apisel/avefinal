@@ -8,7 +8,7 @@ using System.Text;
 
 namespace CSharpEditor
 {
-    class MyAppDomain : MarshalByRefObject
+    class InstrospectiveClass : MarshalByRefObject
     {
 
         private Assembly ass;
@@ -89,7 +89,7 @@ namespace CSharpEditor
             }
         }
 
-        public String[] getMembers(Type fullType, bool isStatic)
+        public String[] getMembers(Type type, bool isStatic)
         {
             BindingFlags bf = BindingFlags.Public;
             if (isStatic) bf = bf | BindingFlags.Static;
