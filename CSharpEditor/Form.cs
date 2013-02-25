@@ -22,6 +22,7 @@ namespace CSharpEditor
         private String lastLocationCompiled = null;
         private String lastLocationImplicitCompiled = null;
         private AppDomain ap;
+        private bool isStatic;
         private InstrospectiveClass ic;
         private Dictionary<String, String> variableTypesInfo = new Dictionary<String, String>();
         private List<string> referencedAssemblies = new List<string>();
@@ -37,9 +38,6 @@ namespace CSharpEditor
             // Add status bar
             statusStrip.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel });
             defineButtonEvents();
-
-            //TODO verifyIfTypeIsDefinedOnAssemblyReferences(String type)
-
         }
 
         [DllImport("Kernel32.dll")]
@@ -115,8 +113,8 @@ namespace CSharpEditor
             if (line.Length > 0 && line[line.Length - 1] == ';')
             {
                 String[] s = line.Split('=');
-                
-                getTypeAndName(s[0]);
+                s = s[0].Split(' ');
+                getTypeAndName((s.Length > 2) ? s[1] + " " + s[2] : s[0] + " " + s[1]);
             }
         }
 
@@ -238,19 +236,19 @@ namespace CSharpEditor
             string errors = null;
             CompilerResults compilerResults;
 
-            string tempLocation = Directory.GetCurrentDirectory()+"\tempFile";
+            string tempLocation = Directory.GetCurrentDirectory() + "\tempFile";
 
             int i = sourceCode.IndexOf("Main");
             if (i != -1) //existe metodo main
             {
-                string exeFile = tempLocation +".exe";
+                string exeFile = tempLocation + ".exe";
                 if (CompilerServices.Compiler.CompileCode(codeProvider, sourceCode, null, exeFile,
                                                           null, null, referencedAssemblies.ToArray(), out errors,
                                                           out compilerResults)) lastLocationImplicitCompiled = exeFile;
             }
             else
             {
-                string library = tempLocation +".dll";
+                string library = tempLocation + ".dll";
 
 
                 if (CompilerServices.Compiler.CompileCode(codeProvider, sourceCode, null, null,
@@ -382,26 +380,25 @@ namespace CSharpEditor
         {
             // Get current line
 
-
-            if (currentLine == null || currentLine[currentLine.Length - 1] == '.')
+            //Falta cobrir um type do tipo "Namespace.Type"
+            if (currentLine == null)
                 return;
 
+            //Isto nao pode ser feito para ficar a 100% vai dar bugs!!!
             String[] wordsInLine = currentLine.Split('.');
             String fullTypeOfAWord;
 
-
-            //if (variableTypesInfo.TryGetValue(wordsInLine[wordsInLine.Length - 1], out typeOfAWord))
             if (variableTypesInfo.ContainsKey(wordsInLine[wordsInLine.Length - 1]))
             {
+                isStatic = false;
                 fullTypeOfAWord = variableTypesInfo[wordsInLine[wordsInLine.Length - 1]];//(Type)t;
-                Console.WriteLine("Referencia " + wordsInLine[wordsInLine.Length - 1] + " do tipo -> " + fullTypeOfAWord);
             }
             else
             {
                 try
                 {
-                    //fullTypeOfAWord = Type.GetType("System." + wordsInLine[wordsInLine.Length - 1]);
-                    fullTypeOfAWord = getTypeFromAssembly(wordsInLine[wordsInLine.Length - 1]);
+                    isStatic = true;
+                    fullTypeOfAWord = getFullNameOfType(wordsInLine[wordsInLine.Length - 1]);
                     //Ver se é de um tipo definido no editorPane
                 }
                 catch (ArgumentNullException)
@@ -420,11 +417,11 @@ namespace CSharpEditor
                 this.listBoxAutoComplete.Items.Clear();
                 // Populate the Auto Complete list box
 
-                //verifyIfTypeIsDefinedOnAssemblyReferences(fullTypeOfAWord);
+                addToListBoxAutoComplete(ic, Type.GetType(fullTypeOfAWord));
 
-                addToListBoxAutoComplete(ic,Type.GetType(fullTypeOfAWord));
-                
-                unloadAppDomain();
+                if (ap != null)
+                    unloadAppDomain();
+
                 // Display the Auto Complete list box
                 DisplayAutoCompleteList();
             }
@@ -434,60 +431,102 @@ namespace CSharpEditor
         {
             //Assumindo que typeAndWord é o tipo - "TypeName" "refName"
             String[] x = typeAndWord.Split(' ');
+            String type;
+            Console.WriteLine(typeAndWord);
 
             if (x.Length > 1)
             {
                 String key = x[1].TrimEnd(' ', ';');
                 if (!variableTypesInfo.ContainsKey(key))
                 {
-                    variableTypesInfo.Add(key, getTypeFromAssembly(x[0]));
+                    if ((type = getFullNameOfType(x[0])) != null)
+                        variableTypesInfo.Add(key, type);
                 }
             }
+        }
+
+        private String getFullNameOfType(String type)
+        {
+            String fullName = getKeywordsType(type);
+
+            if (fullName == null)
+            {
+                fullName = getFullNameFromUsings(type);
+                if (fullName == type)
+                    fullName = getTypeFromAssembly(type);
+            }
+            return fullName;
+        }
+
+
+        private String getKeywordsType(String type)
+        {
+            switch (type)
+            {
+                case "int": return typeof(int).FullName;
+                case "float": return typeof(float).FullName;
+                case "double": return typeof(double).FullName;
+                case "long": return typeof(long).FullName;
+                case "bool": return typeof(bool).FullName;
+                case "char": return typeof(char).FullName;
+                case "uint": return typeof(uint).FullName;
+                case "ulong": return typeof(ulong).FullName;
+                case "object": return typeof(object).FullName;
+                case "string": return typeof(string).FullName;
+                case "byte": return typeof(byte).FullName;
+                case "short": return typeof(short).FullName;
+            }
+            return null;
+        }
+
+
+        private String getFullNameFromUsings(String type)
+        {
+            //percorrer os using para ver se é um tipo de lá definido
+            Match match = Regex.Match(editorPane.Text, "using *[A-Za-z1-9.]*");
+            String toCompare;
+
+            while (match.Success)
+            {
+                toCompare = Regex.Replace(match.Value, "using *", "");
+                toCompare = toCompare.TrimEnd(' ', ';');
+                String aux = toCompare + "." + type;
+                if (Type.GetType(aux) != null)
+                {
+                    return aux;
+                }
+
+                match = match.NextMatch();
+            }
+            return null;
         }
 
         private String getTypeFromAssembly(String type)
         {
             implicitCompilation(removeCurrentLine());
+
             if (verifyIfTypeIsDefinedOnAssemblyReferences(type))
             {
-                //percorrer os using para ver se é um tipo de lá definido
-                Match match = Regex.Match(editorPane.Text, "using *[A-Za-z1-9.]*");
-                String toCompare;
-
-                while (match.Success)
-                {
-                    toCompare = Regex.Replace(match.Value, "using *", "");
-                    toCompare = toCompare.TrimEnd(' ', ';');
-
-                    if (Type.GetType(toCompare + type) != null)
-                    {
-                        return toCompare + type;
-                    }
-
-                    match.NextMatch();
-                }
 
                 DirectoryInfo dirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
 
-                 foreach(FileInfo f in dirInfo.GetFiles("*.dll | *.exe"))
-                 {
-                     Assembly asb = Assembly.LoadFile(f.FullName);
+                foreach (FileInfo f in dirInfo.GetFiles("*.dll | *.exe"))
+                {
+                    Assembly asb = Assembly.LoadFile(f.FullName);
 
-                     foreach (Type t in asb.GetTypes())
-                     {
-                         if (t.Name == type)
+                    foreach (Type t in asb.GetTypes())
+                    {
+                        if (t.Name == type)
 
-                             return f.FullName;
-                     }
-                 }
-                
-
+                            return f.FullName;
+                    }
+                }
                 //Tavlez seja ainda preciso fazer mais alguma introspecao +++++++++++++++++++++++++++++++++++++++++++
                 //No conteudo dos usings por exemplo
 
                 //Falta achar os tipos definidos no editorPane. Aqui ou antes deste método
             }
-            
+
             return type;
         }
 
@@ -505,6 +544,7 @@ namespace CSharpEditor
         private void unloadAppDomain()
         {
             AppDomain.Unload(ap);
+            ap = null;
         }
 
         private void clearDictionary()
@@ -542,11 +582,12 @@ namespace CSharpEditor
 
         private void addToListBoxAutoComplete(InstrospectiveClass ad, Type toExtractMembers)
         {
-            foreach (String s in ad.getMembers(toExtractMembers, false))
-                this.listBoxAutoComplete.Items.Add(s);
+            if (ad == null)
+                ad = new InstrospectiveClass();
+
+            foreach (String s in ad.getMembers(toExtractMembers, isStatic))
+                    this.listBoxAutoComplete.Items.Add(s);
+            
         }
-
-        
-
     }
 }

@@ -109,7 +109,12 @@ namespace CSharpEditor
 
         public bool checkType(String type)
         {
-           return ass.GetType(type)!=null;
+            Type assType = ass.GetType(type);
+            if (assType == null)
+                assType = Type.GetType(type);
+            else
+                return true;
+            return assType != null;
         }
     }
 }
