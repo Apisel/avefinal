@@ -21,6 +21,7 @@ namespace CSharpEditor
         private String lastLocationSaved = null;
         private String lastLocationCompiled = null;
         private AppDomain ap;
+        private InstrospectiveClass ic;
         private Dictionary<String, String> variableTypesInfo = new Dictionary<String, String>();
         private List<string> referencedAssemblies = new List<string>();
 
@@ -416,9 +417,11 @@ namespace CSharpEditor
                 this.listBoxAutoComplete.Items.Clear();
                 // Populate the Auto Complete list box
 
-                verifyIfTypeIsDefinedOnAssemblyReferences(fullTypeOfAWord);
+                //verifyIfTypeIsDefinedOnAssemblyReferences(fullTypeOfAWord);
 
-                addToListBoxAutoComplete(/*InstrospectiveClass*/,/*type*/);
+                addToListBoxAutoComplete(ic,Type.GetType(fullTypeOfAWord));
+                
+                unloadAppDomain();
                 // Display the Auto Complete list box
                 DisplayAutoCompleteList();
             }
@@ -454,14 +457,34 @@ namespace CSharpEditor
                     toCompare = toCompare.TrimEnd(' ', ';');
 
                     if (Type.GetType(toCompare + type) != null)
+                    {
                         return toCompare + type;
+                    }
 
                     match.NextMatch();
                 }
+
+                DirectoryInfo dirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+
+                 foreach(FileInfo f in dirInfo.GetFiles("*.dll | *.exe"))
+                 {
+                     Assembly asb = Assembly.LoadFile(f.FullName);
+
+                     foreach (Type t in asb.GetTypes())
+                     {
+                         if (t.Name == type)
+
+                             return f.FullName;
+                     }
+                 }
+                
+
                 //Tavlez seja ainda preciso fazer mais alguma introspecao +++++++++++++++++++++++++++++++++++++++++++
                 //No conteudo dos usings por exemplo
+
+                //Falta achar os tipos definidos no editorPane. Aqui ou antes deste método
             }
-            unloadAppDomain();
+            
             return type;
         }
 
@@ -473,19 +496,6 @@ namespace CSharpEditor
             String editorText = editorPane.Text;
             editorPane.Lines[currentLineIndex] = line;
             return editorText;
-        }
-        /*
-        private String contructFullNamePath(String type)
-        {
-            if (verifyIfTypeIsDefinedOnAssemblyReferences())
-            {
-
-            }
-        }
-        */
-        private void loadAssemblies()
-        {
-
         }
 
         //DON'T FORGET TO DO THIS FOR EACH verifyIfTypeIsDefinedOnAssemblyReferences()
@@ -510,10 +520,10 @@ namespace CSharpEditor
                 CachePath = Directory.GetCurrentDirectory()
             };
 
-            InstrospectiveClass ic = new InstrospectiveClass();
+            ic = new InstrospectiveClass();
             ap = AppDomain.CreateDomain("compileDomain", null, setup);
             ic =
-            (InstrospectiveClass)ap.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "CSharpEditor.MyAppDomain");
+            (InstrospectiveClass)ap.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "CSharpEditor.InstrospectiveClass");
 
             try
             {
@@ -528,9 +538,9 @@ namespace CSharpEditor
             return ic.checkType(type);
         }
 
-        private void addToListBoxAutoComplete(InstrospectiveClass ad, Type toExtractMemebrs)
+        private void addToListBoxAutoComplete(InstrospectiveClass ad, Type toExtractMembers)
         {
-            foreach (String s in ad.getMembers(toExtractMemebrs, false))
+            foreach (String s in ad.getMembers(toExtractMembers, false))
                 this.listBoxAutoComplete.Items.Add(s);
         }
 
