@@ -42,3 +42,10 @@ C:\Users\Pedro\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.Properties.R
 C:\Users\Pedro\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.csproj.GenerateResource.Cache
 C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.exe
 C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.pdb
+C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\CSharpEditor\bin\Debug\CSharpEditor.exe
+C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\CSharpEditor\bin\Debug\CSharpEditor.pdb
+C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\CSharpEditor\obj\x86\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.CSharpEditorForm.resources
+C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\CSharpEditor\obj\x86\Debug\CSharpEditor.Properties.Resources.resources
+C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\CSharpEditor\obj\x86\Debug\GenerateResource.read.1.tlog
+C:\Documents and Settings\André Pinto\Os meus documentos\ISEL\AVE\avefinal\CSharpEditor\obj\x86\Debug\GenerateResource.write.1.tlog

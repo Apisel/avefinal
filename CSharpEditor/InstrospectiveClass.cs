@@ -22,7 +22,7 @@ namespace CSharpEditor
            }
         }
 
-        public void loadAssembly(String exeFilePath) 
+        public void loadAssembly(String exeFilePath)
         {
             ass = Assembly.LoadFrom(exeFilePath);
         }
@@ -31,7 +31,7 @@ namespace CSharpEditor
         {
             foreach (var evt in type.GetEvents(bf))
             {
-                yield return "Event:"+ evt.Name;
+                yield return evt.Name;
             }
             
         }
@@ -41,7 +41,7 @@ namespace CSharpEditor
 
             foreach (var f in type.GetFields(bf))
             {
-                yield return "Field: "+ f.Name;
+                yield return  f.Name;
             }
 
         }
@@ -51,7 +51,7 @@ namespace CSharpEditor
             String aux;
             foreach (var methodName in type.GetMethods(bf))
             {
-                aux = "Method: "+ methodName.ReturnType + methodName.Name + " (";
+                aux =  methodName.ReturnType + methodName.Name + " (";
                 foreach(var param in methodName.GetParameters())
                 {
                     aux = aux + param.Name;
@@ -69,7 +69,7 @@ namespace CSharpEditor
             String aux;
             foreach (var prop in type.GetProperties(bf))
             {
-                aux= "Property: "+ prop.Name + " [";
+                aux=  prop.Name + " [";
                 foreach (var param in prop.GetIndexParameters())
                 {
                     aux = aux + param.Name;
@@ -85,7 +85,7 @@ namespace CSharpEditor
         {
             foreach (var nt in type.GetNestedTypes(bf))
             {
-                yield return "Nested Type: " +nt.Name;
+                yield return nt.Name;
             }
         }
 

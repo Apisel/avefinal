@@ -20,6 +20,7 @@ namespace CSharpEditor
         private Point caretPos;
         private String lastLocationSaved = null;
         private String lastLocationCompiled = null;
+        private String lastLocationImplicitCompiled = null;
         private AppDomain ap;
         private InstrospectiveClass ic;
         private Dictionary<String, String> variableTypesInfo = new Dictionary<String, String>();
@@ -114,6 +115,7 @@ namespace CSharpEditor
             if (line.Length > 0 && line[line.Length - 1] == ';')
             {
                 String[] s = line.Split('=');
+                
                 getTypeAndName(s[0]);
             }
         }
@@ -242,17 +244,18 @@ namespace CSharpEditor
             if (i != -1) //existe metodo main
             {
                 string exeFile = tempLocation +".exe";
-                CompilerServices.Compiler.CompileCode(codeProvider, sourceCode, null, exeFile,
+                if (CompilerServices.Compiler.CompileCode(codeProvider, sourceCode, null, exeFile,
                                                           null, null, referencedAssemblies.ToArray(), out errors,
-                                                          out compilerResults);
+                                                          out compilerResults)) lastLocationImplicitCompiled = exeFile;
             }
             else
             {
                 string library = tempLocation +".dll";
 
-                CompilerServices.Compiler.CompileCode(codeProvider, sourceCode, null, null,
+
+                if (CompilerServices.Compiler.CompileCode(codeProvider, sourceCode, null, null,
                                                               library, null, referencedAssemblies.ToArray(), out errors,
-                                                              out compilerResults);
+                                                              out compilerResults)) lastLocationImplicitCompiled = library;
 
             }
         }
@@ -525,14 +528,13 @@ namespace CSharpEditor
             ic =
             (InstrospectiveClass)ap.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "CSharpEditor.InstrospectiveClass");
 
-            try
+            if (lastLocationImplicitCompiled != null)
             {
-                ic.loadAssembly(lastLocationCompiled);
+                ic.loadAssembly(lastLocationImplicitCompiled);
             }
-            catch (ArgumentNullException)
+            else
             {
-                errorsList.Clear();
-                errorsList.AppendText("Assembly não encontrado");
+                return false;
             }
 
             return ic.checkType(type);
