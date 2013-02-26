@@ -242,9 +242,13 @@ namespace CSharpEditor
             if (i != -1) //existe metodo main
             {
                 string exeFile = tempLocation + ".exe";
-                if (CompilerServices.Compiler.CompileCode(codeProvider, sourceCode, null, exeFile,
-                                                          null, null, referencedAssemblies.ToArray(), out errors,
-                                                          out compilerResults)) lastLocationImplicitCompiled = exeFile;
+                if (CompilerServices.Compiler.CompileCode(codeProvider, sourceCode, null, 
+                    exeFile, null, null, referencedAssemblies.ToArray(), 
+                    out errors, out compilerResults)) lastLocationImplicitCompiled = exeFile;
+                else {
+                    errorsList.Clear();
+                    errorsList.AppendText(sourceCode + exeFile);
+                }
             }
             else
             {
@@ -343,9 +347,17 @@ namespace CSharpEditor
 
         private void listBoxAutoComplete_Click(object sender, EventArgs e)
         {
+            int cursorPos = editorPane.SelectionStart;
             int index = listBoxAutoComplete.SelectedIndex;
             int i = editorPane.GetLineFromCharIndex(editorPane.SelectionStart);
-            editorPane.AppendText(listBoxAutoComplete.Items[index].ToString());
+            int subS = listBoxAutoComplete.Items[index].ToString().LastIndexOf('.');
+            String toAdd = listBoxAutoComplete.Items[index].ToString().Substring(subS);
+
+            if (toAdd.IndexOf(" ") != -1) listBoxAutoComplete.Items[index].ToString().Substring(subS);
+
+            
+            editorPane.Text = editorPane.Text.Insert(editorPane.SelectionStart-1, toAdd);
+            editorPane.SelectionStart = cursorPos + toAdd.Length;
             Clear();
         }
 
@@ -388,10 +400,10 @@ namespace CSharpEditor
             String[] wordsInLine = currentLine.Split('.');
             String fullTypeOfAWord;
 
-            if (variableTypesInfo.ContainsKey(wordsInLine[wordsInLine.Length - 1]))
+            if (variableTypesInfo.ContainsKey(wordsInLine[wordsInLine.Length - 1].Trim()))
             {
                 isStatic = false;
-                fullTypeOfAWord = variableTypesInfo[wordsInLine[wordsInLine.Length - 1]];//(Type)t;
+                fullTypeOfAWord = variableTypesInfo[wordsInLine[wordsInLine.Length - 1].Trim()];//(Type)t;
             }
             else
             {
@@ -432,14 +444,14 @@ namespace CSharpEditor
             //Assumindo que typeAndWord é o tipo - "TypeName" "refName"
             String[] x = typeAndWord.Split(' ');
             String type;
-            Console.WriteLine(typeAndWord);
+            //Console.WriteLine(typeAndWord);
 
             if (x.Length > 1)
             {
                 String key = x[1].TrimEnd(' ', ';');
                 if (!variableTypesInfo.ContainsKey(key))
                 {
-                    if ((type = getFullNameOfType(x[0])) != null)
+                    if ((type = getFullNameOfType(x[0].Trim())) != null)
                         variableTypesInfo.Add(key, type);
                 }
             }
@@ -452,9 +464,10 @@ namespace CSharpEditor
             if (fullName == null)
             {
                 fullName = getFullNameFromUsings(type);
-                if (fullName == type)
+                if (fullName == null)
                     fullName = getTypeFromAssembly(type);
             }
+
             return fullName;
         }
 
@@ -560,13 +573,22 @@ namespace CSharpEditor
                 ApplicationBase = Directory.GetCurrentDirectory(),
                 ShadowCopyFiles = "true",
                 ShadowCopyDirectories = Directory.GetCurrentDirectory(),
-                CachePath = Directory.GetCurrentDirectory()
+                //CachePath = Directory.GetCurrentDirectory()
             };
 
-            ic = new InstrospectiveClass();
+            //ic = new InstrospectiveClass();
             ap = AppDomain.CreateDomain("compileDomain", null, setup);
-            ic =
-            (InstrospectiveClass)ap.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, "CSharpEditor.InstrospectiveClass");
+
+
+            try
+            {
+                ic =
+                (InstrospectiveClass)ap.CreateInstanceAndUnwrap(
+                Assembly.GetExecutingAssembly().FullName, "CSharpEditor.InstrospectiveClass");
+            }
+            catch
+            {
+            }
 
             if (lastLocationImplicitCompiled != null)
             {
@@ -586,8 +608,8 @@ namespace CSharpEditor
                 ad = new InstrospectiveClass();
 
             foreach (String s in ad.getMembers(toExtractMembers, isStatic))
-                    this.listBoxAutoComplete.Items.Add(s);
-            
+                this.listBoxAutoComplete.Items.Add(s);
+
         }
     }
 }

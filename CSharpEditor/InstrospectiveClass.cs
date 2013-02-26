@@ -51,7 +51,7 @@ namespace CSharpEditor
             String aux;
             foreach (var methodName in type.GetMethods(bf))
             {
-                aux =  methodName.ReturnType + methodName.Name + " (";
+                aux =  methodName.ReturnType +" "+ methodName.Name + " (";
                 foreach(var param in methodName.GetParameters())
                 {
                     aux = aux + param.Name;
