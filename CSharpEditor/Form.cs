@@ -21,11 +21,13 @@ namespace CSharpEditor
         private String lastLocationSaved = null;
         private String lastLocationCompiled = null;
         private String lastLocationImplicitCompiled = null;
+        private String currentExecutableDirectory = Directory.GetCurrentDirectory();
         private AppDomain ap;
         private bool isStatic;
         private InstrospectiveClass ic;
         private Dictionary<String, String> variableTypesInfo = new Dictionary<String, String>();
         private List<string> referencedAssemblies = new List<string>();
+        
 
 
         public CSharpEditorForm()
@@ -231,12 +233,11 @@ namespace CSharpEditor
 
         private void implicitCompilation(String sourceCode)
         {
-
             CodeDomProvider codeProvider = new CSharpCodeProvider();
             string errors = null;
             CompilerResults compilerResults;
 
-            string tempLocation = Directory.GetCurrentDirectory() + "\tempFile";
+            string tempLocation = Directory.GetCurrentDirectory() + @"\tempFile";
 
             int i = sourceCode.IndexOf("Main");
             if (i != -1) //existe metodo main
@@ -247,7 +248,7 @@ namespace CSharpEditor
                     out errors, out compilerResults)) lastLocationImplicitCompiled = exeFile;
                 else {
                     errorsList.Clear();
-                    errorsList.AppendText(sourceCode + exeFile);
+                    errorsList.AppendText(errors);
                 }
             }
             else
@@ -410,7 +411,7 @@ namespace CSharpEditor
                 try
                 {
                     isStatic = true;
-                    fullTypeOfAWord = getFullNameOfType(wordsInLine[wordsInLine.Length - 1]);
+                    fullTypeOfAWord = getFullNameOfType(wordsInLine[wordsInLine.Length - 1].Trim());
                     //Ver se é de um tipo definido no editorPane
                 }
                 catch (ArgumentNullException)
@@ -546,10 +547,14 @@ namespace CSharpEditor
         private String removeCurrentLine()
         {
             int currentLineIndex = editorPane.GetLineFromCharIndex(editorPane.SelectionStart);
-            String line = editorPane.Lines[currentLineIndex];
-            editorPane.Lines[currentLineIndex] = "";
             String editorText = editorPane.Text;
-            editorPane.Lines[currentLineIndex] = line;
+            String line = editorPane.Lines[currentLineIndex];
+            editorText= editorText.Replace(line,"");
+            
+            //editorPane.Lines[currentLineIndex] = "";
+            
+            //editorPane.Lines[currentLineIndex] = line;
+           
             return editorText;
         }
 
@@ -570,25 +575,23 @@ namespace CSharpEditor
             var setup = new AppDomainSetup
             {
                 ApplicationName = "secondApp",
-                ApplicationBase = Directory.GetCurrentDirectory(),
+                ApplicationBase = currentExecutableDirectory,
                 ShadowCopyFiles = "true",
-                ShadowCopyDirectories = Directory.GetCurrentDirectory(),
+                ShadowCopyDirectories = currentExecutableDirectory,
                 //CachePath = Directory.GetCurrentDirectory()
             };
 
             //ic = new InstrospectiveClass();
             ap = AppDomain.CreateDomain("compileDomain", null, setup);
 
-
-            try
-            {
+            errorsList.Clear();
+            errorsList.AppendText(currentExecutableDirectory);
+            
                 ic =
                 (InstrospectiveClass)ap.CreateInstanceAndUnwrap(
                 Assembly.GetExecutingAssembly().FullName, "CSharpEditor.InstrospectiveClass");
-            }
-            catch
-            {
-            }
+            
+           
 
             if (lastLocationImplicitCompiled != null)
             {
