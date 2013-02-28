@@ -8,18 +8,18 @@ using System.Text;
 
 namespace CSharpEditor
 {
-    class InstrospectiveClass : MarshalByRefObject
+    internal class InstrospectiveClass : MarshalByRefObject
     {
 
         private Assembly ass;
 
         public IEnumerable<String> getTypes(String path)
         {
-           System.Reflection.Assembly o = System.Reflection.Assembly.Load(path);
-           foreach (var typeName in o.GetTypes())
-           {
-               yield return "Type: "+typeName.Name;
-           }
+            System.Reflection.Assembly o = System.Reflection.Assembly.Load(path);
+            foreach (var typeName in o.GetTypes())
+            {
+                yield return "Type: " + typeName.Name;
+            }
         }
 
         public void loadAssembly(String exeFilePath)
@@ -27,13 +27,13 @@ namespace CSharpEditor
             ass = Assembly.LoadFrom(exeFilePath);
         }
 
-        private IEnumerable<String> getTypeEvents(Type type,BindingFlags bf)
+        private IEnumerable<String> getTypeEvents(Type type, BindingFlags bf)
         {
             foreach (var evt in type.GetEvents(bf))
             {
                 yield return evt.Name;
             }
-            
+
         }
 
         private IEnumerable<String> getTypeFields(Type type, BindingFlags bf)
@@ -41,7 +41,7 @@ namespace CSharpEditor
 
             foreach (var f in type.GetFields(bf))
             {
-                yield return  f.Name;
+                yield return f.Name;
             }
 
         }
@@ -51,8 +51,8 @@ namespace CSharpEditor
             String aux;
             foreach (var methodName in type.GetMethods(bf))
             {
-                aux =  methodName.ReturnType +" "+ methodName.Name + " (";
-                foreach(var param in methodName.GetParameters())
+                aux = methodName.ReturnType + " " + methodName.Name + " (";
+                foreach (var param in methodName.GetParameters())
                 {
                     aux = aux + param.Name;
                     aux = aux + ", ";
@@ -69,7 +69,7 @@ namespace CSharpEditor
             String aux;
             foreach (var prop in type.GetProperties(bf))
             {
-                aux=  prop.Name + " [";
+                aux = prop.Name + " [";
                 foreach (var param in prop.GetIndexParameters())
                 {
                     aux = aux + param.Name;
@@ -95,7 +95,7 @@ namespace CSharpEditor
             if (isStatic) bf = bf | BindingFlags.Static;
             else bf = bf | BindingFlags.Instance;
 
-            List<String> membersList=new List<String>();
+            List<String> membersList = new List<String>();
 
             membersList.AddRange(getTypeEvents(type, bf));
             membersList.AddRange(getTypeFields(type, bf));
@@ -115,6 +115,12 @@ namespace CSharpEditor
             else
                 return true;
             return assType != null;
+        }
+
+        public String[] getMembersByString(String type, bool isStatic)
+        {
+            Type assType = ass.GetType(type);
+            return getMembers(assType, isStatic);
         }
     }
 }
