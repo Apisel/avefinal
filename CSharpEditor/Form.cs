@@ -41,6 +41,8 @@ namespace CSharpEditor
             // Add status bar
             statusStrip.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel });
             defineButtonEvents();
+            this.listBoxAutoComplete.KeyDown+=listBox_EnterKey;
+            
         }
 
         [DllImport("Kernel32.dll")]
@@ -80,6 +82,18 @@ namespace CSharpEditor
             this.listBoxAutoComplete.Width = 230;
             this.listBoxAutoComplete.BringToFront();
             this.listBoxAutoComplete.Show();
+            this.listBoxAutoComplete.Select();
+            this.listBoxAutoComplete.SetSelected(0,true);
+            
+            
+        }
+
+        private void listBox_EnterKey(object sender, EventArgs e)
+        {
+            if(this.listBoxAutoComplete.Visible)
+            {
+                
+            }
         }
 
         private void StatusLine()
@@ -399,6 +413,7 @@ namespace CSharpEditor
             compileButton.Click += new System.EventHandler(this.compileButton_click);
             newFileButton.Click += new System.EventHandler(this.newFileButton_click);
             listBoxAutoComplete.Click += new System.EventHandler(this.listBoxAutoComplete_Click);
+
         }
 
         private void getCurrentLine(out String line)
@@ -447,18 +462,19 @@ namespace CSharpEditor
                 }
             }
             if (fullTypeOfAWord == null) return;
-            
+
 
             if (!this.listBoxAutoComplete.Visible)
             {
 
                 this.listBoxAutoComplete.Items.Clear();
                 // Populate the Auto Complete list box
-                
+
                 if (Type.GetType(fullTypeOfAWord) == null)
                 {
-                    if (verifyIfTypeIsDefinedOnAssemblyReferences(fullTypeOfAWord))
-                        addToListBoxAutoComplete(ic, fullTypeOfAWord);//TODO
+                    String aux = getNameSpace() + fullTypeOfAWord;
+                    if (verifyIfTypeIsDefinedOnAssemblyReferences(aux))
+                        addToListBoxAutoComplete(ic, aux);
 
                 }
 
@@ -496,11 +512,21 @@ namespace CSharpEditor
             if (fullName == null)
             {
                 fullName = getFullNameFromUsings(type);
-                if (fullName == null && verifyIfTypeIsDefinedOnAssemblyReferences(type))
+                if (fullName == null && verifyIfTypeIsDefinedOnAssemblyReferences(getNameSpace()+type))
                     fullName = type;
             }
 
             return fullName;
+        }
+
+        public String getNameSpace()
+        {
+            String namespacer = "";
+            Match match = Regex.Match(editorPane.Text, "namespace +[A-Za-z0-9]+");
+            
+                if(match.Success)
+                    namespacer = Regex.Replace(match.Value,"namespace +","");
+            return namespacer + ".";
         }
 
 
@@ -546,7 +572,7 @@ namespace CSharpEditor
             return null;
         }
 
-     
+
         private String removeCurrentLine()
         {
             int currentLineIndex = editorPane.GetLineFromCharIndex(editorPane.SelectionStart);
@@ -592,20 +618,21 @@ namespace CSharpEditor
 
             ic = (InstrospectiveClass)ap.CreateInstanceAndUnwrap(
             Assembly.GetExecutingAssembly().FullName, "CSharpEditor.InstrospectiveClass");
-            
-            DirectoryInfo dirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
 
-            foreach (FileInfo f in dirInfo.GetFiles("dll")) // | .exe"
-                {
-                    ic.loadAssembly(f.FullName);
+            //DirectoryInfo dirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
 
-                    if (ic.checkType(type))
-                        return true;
-                    
-                }
-                
+            //foreach (FileInfo f in dirInfo.GetFiles("dll")) // | .exe"
+            foreach (String s in referencedAssemblies) // | .exe"
+            {
+                ic.loadAssembly(s);
+
+                if (ic.checkType(type))
+                    return true;
+
+            }
+
             return false;
-            
+
         }
 
         private void addToListBoxAutoComplete(InstrospectiveClass ic, String toExtractMembers)
