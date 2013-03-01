@@ -41,8 +41,8 @@ namespace CSharpEditor
             // Add status bar
             statusStrip.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel });
             defineButtonEvents();
-            this.listBoxAutoComplete.KeyDown+=listBox_EnterKey;
-            
+            this.listBoxAutoComplete.KeyDown += listBox_EnterKey;
+
         }
 
         [DllImport("Kernel32.dll")]
@@ -83,17 +83,40 @@ namespace CSharpEditor
             this.listBoxAutoComplete.BringToFront();
             this.listBoxAutoComplete.Show();
             this.listBoxAutoComplete.Select();
-            this.listBoxAutoComplete.SetSelected(0,true);
-            
-            
+            this.listBoxAutoComplete.SetSelected(0, true);
+
+
         }
 
-        private void listBox_EnterKey(object sender, EventArgs e)
+        private void listBox_EnterKey(object sender, KeyEventArgs e)
         {
-            if(this.listBoxAutoComplete.Visible)
+            if (this.listBoxAutoComplete.Visible)
             {
-                
+                if (e.KeyCode == Keys.Enter)
+                {
+                    writeFromListBox();
+                    e.Handled = true;
+                }
+
             }
+        }
+
+        private void writeFromListBox()
+        {
+            int cursorPos = editorPane.SelectionStart;
+            int index = listBoxAutoComplete.SelectedIndex;
+            int i = editorPane.GetLineFromCharIndex(editorPane.SelectionStart);
+            int subS = listBoxAutoComplete.Items[index].ToString().LastIndexOf('.');
+            String toAdd = listBoxAutoComplete.Items[index].ToString().Substring(subS + 1).Trim();
+
+            if ((subS = toAdd.IndexOf(" ")) != -1)
+            {
+                toAdd = toAdd.Substring(subS);
+            }
+
+            editorPane.Text = editorPane.Text.Insert(editorPane.SelectionStart, toAdd);
+            editorPane.SelectionStart = cursorPos + toAdd.Length;
+            Clear();
         }
 
         private void StatusLine()
@@ -133,6 +156,7 @@ namespace CSharpEditor
                 getCurrentLine(out line);
                 if (line.Length > 0 && line[line.Length - 1] == ';')
                 {
+                    line = line.Trim();
                     String[] s = line.Split('=');
                     s = s[0].Split(' ');
                     getTypeAndName((s.Length > 2) ? s[1] + " " + s[2] : s[0] + " " + s[1]);
@@ -334,14 +358,16 @@ namespace CSharpEditor
             openFileDialog2.FileName = "";
             openFileDialog2.Filter = "dll files (*.dll)|*.dll|All files (*.*)|*.*";
             openFileDialog2.Multiselect = true;
-            openFileDialog2.ShowDialog();
 
-            foreach (string fileName in openFileDialog2.FileNames)
+            if (openFileDialog2.ShowDialog() == DialogResult.OK)
             {
-                if (referencedAssemblies.IndexOf(fileName) == -1)
+                foreach (string fileName in openFileDialog2.FileNames)
                 {
-                    referencedAssemblies.Add(fileName);
-                    assemblyRefsComboBox.Items.Add(fileName.Substring(fileName.LastIndexOf("\\")));
+                    if (referencedAssemblies.IndexOf(fileName) == -1)
+                    {
+                        referencedAssemblies.Add(fileName);
+                        assemblyRefsComboBox.Items.Add(fileName.Substring(fileName.LastIndexOf("\\")));
+                    }
                 }
             }
 
@@ -389,18 +415,7 @@ namespace CSharpEditor
 
         private void listBoxAutoComplete_Click(object sender, EventArgs e)
         {
-            int cursorPos = editorPane.SelectionStart;
-            int index = listBoxAutoComplete.SelectedIndex;
-            int i = editorPane.GetLineFromCharIndex(editorPane.SelectionStart);
-            int subS = listBoxAutoComplete.Items[index].ToString().LastIndexOf('.');
-            String toAdd = listBoxAutoComplete.Items[index].ToString().Substring(subS);
-
-            if (toAdd.IndexOf(" ") != -1) listBoxAutoComplete.Items[index].ToString().Substring(subS);
-
-
-            editorPane.Text = editorPane.Text.Insert(editorPane.SelectionStart - 1, toAdd);
-            editorPane.SelectionStart = cursorPos + toAdd.Length;
-            Clear();
+            writeFromListBox();
         }
 
         private void defineButtonEvents()
@@ -469,14 +484,19 @@ namespace CSharpEditor
 
                 this.listBoxAutoComplete.Items.Clear();
                 // Populate the Auto Complete list box
-
-                if (Type.GetType(fullTypeOfAWord) == null)
+                Type type;
+                if ((type = Type.GetType(fullTypeOfAWord)) == null)
                 {
                     String aux = getNameSpace() + fullTypeOfAWord;
                     if (verifyIfTypeIsDefinedOnAssemblyReferences(aux))
-                        addToListBoxAutoComplete(ic, aux);
+                        addToListBoxAutoCompleteRef(ic, aux);
 
                 }
+                else
+                {
+                    addToListBoxAutoComplete(ic, type);
+                }
+
 
                 if (ap != null)
                     unloadAppDomain();
@@ -512,7 +532,7 @@ namespace CSharpEditor
             if (fullName == null)
             {
                 fullName = getFullNameFromUsings(type);
-                if (fullName == null && verifyIfTypeIsDefinedOnAssemblyReferences(getNameSpace()+type))
+                if (fullName == null && verifyIfTypeIsDefinedOnAssemblyReferences(getNameSpace() + type))
                     fullName = type;
             }
 
@@ -523,9 +543,9 @@ namespace CSharpEditor
         {
             String namespacer = "";
             Match match = Regex.Match(editorPane.Text, "namespace +[A-Za-z0-9]+");
-            
-                if(match.Success)
-                    namespacer = Regex.Replace(match.Value,"namespace +","");
+
+            if (match.Success)
+                namespacer = Regex.Replace(match.Value, "namespace +", "");
             return namespacer + ".";
         }
 
@@ -635,12 +655,22 @@ namespace CSharpEditor
 
         }
 
-        private void addToListBoxAutoComplete(InstrospectiveClass ic, String toExtractMembers)
+        private void addToListBoxAutoCompleteRef(InstrospectiveClass ic, String toExtractMembers)
         {
             if (ic == null)
                 ic = new InstrospectiveClass();
 
             foreach (String s in ic.getMembersByString(toExtractMembers, isStatic))
+                this.listBoxAutoComplete.Items.Add(s);
+           
+        }
+
+        private void addToListBoxAutoComplete(InstrospectiveClass ic, Type toExtractMembers)
+        {
+            if (ic == null)
+                ic = new InstrospectiveClass();
+
+            foreach (String s in ic.getMembers(toExtractMembers, isStatic))
                 this.listBoxAutoComplete.Items.Add(s);
 
         }
