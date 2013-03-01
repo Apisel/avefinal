@@ -28,9 +28,7 @@ namespace CSharpEditor
         private Dictionary<String, String> variableTypesInfo = new Dictionary<String, String>();
         private List<string> referencedAssemblies = new List<string>();
         private bool isLoading = false;
-
-
-
+        
         public CSharpEditorForm()
         {
             InitializeComponent();
@@ -68,8 +66,7 @@ namespace CSharpEditor
                 displayAutoCompleteBox(line);
             }
         }
-
-
+        
         // Display the Auto Complete list box
         private void DisplayAutoCompleteList()
         {
@@ -539,7 +536,7 @@ namespace CSharpEditor
             return fullName;
         }
 
-        public String getNameSpace()
+        private String getNameSpace()
         {
             String namespacer = "";
             Match match = Regex.Match(editorPane.Text, "namespace +[A-Za-z0-9]+");
@@ -548,8 +545,7 @@ namespace CSharpEditor
                 namespacer = Regex.Replace(match.Value, "namespace +", "");
             return namespacer + ".";
         }
-
-
+        
         private String getKeywordsType(String type)
         {
             switch (type)
@@ -569,8 +565,7 @@ namespace CSharpEditor
             }
             return null;
         }
-
-
+        
         private String getFullNameFromUsings(String type)
         {
             //percorrer os using para ver se é um tipo de lá definido
@@ -591,8 +586,7 @@ namespace CSharpEditor
             }
             return null;
         }
-
-
+        
         private String removeCurrentLine()
         {
             int currentLineIndex = editorPane.GetLineFromCharIndex(editorPane.SelectionStart);
@@ -619,7 +613,7 @@ namespace CSharpEditor
             variableTypesInfo.Clear();
         }
 
-        public bool verifyIfTypeIsDefinedOnAssemblyReferences(String type)
+        private bool verifyIfTypeIsDefinedOnAssemblyReferences(String type)
         {
             if (isLoading) implicitCompilation(editorPane.Text);
             else implicitCompilation(removeCurrentLine());
@@ -639,7 +633,7 @@ namespace CSharpEditor
             ic = (InstrospectiveClass)ap.CreateInstanceAndUnwrap(
             Assembly.GetExecutingAssembly().FullName, "CSharpEditor.InstrospectiveClass");
 
-            //DirectoryInfo dirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+            
 
             //foreach (FileInfo f in dirInfo.GetFiles("dll")) // | .exe"
             foreach (String s in referencedAssemblies) // | .exe"
@@ -650,6 +644,20 @@ namespace CSharpEditor
                     return true;
 
             }
+
+            //verificar tipos definidos no proprio editorPane;
+            DirectoryInfo dirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+            foreach (var file in dirInfo.GetFiles("exe"))
+            {
+                if(file.Name.Equals("tempFile"))
+                {
+                    ic.loadAssembly(file.FullName);
+                    if (ic.checkType(type))
+                        return true;
+                }
+            }
+
+
 
             return false;
 
