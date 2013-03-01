@@ -454,6 +454,7 @@ namespace CSharpEditor
             String[] wordsInLine = currentLine.Split('.');
             String fullTypeOfAWord;
 
+            
             if (variableTypesInfo.ContainsKey(wordsInLine[wordsInLine.Length - 1].Trim()))
             {
                 isStatic = false;
@@ -636,7 +637,7 @@ namespace CSharpEditor
             
 
             //foreach (FileInfo f in dirInfo.GetFiles("dll")) // | .exe"
-            foreach (String s in referencedAssemblies) // | .exe"
+            foreach (String s in referencedAssemblies) 
             {
                 ic.loadAssembly(s);
 
@@ -647,9 +648,9 @@ namespace CSharpEditor
 
             //verificar tipos definidos no proprio editorPane;
             DirectoryInfo dirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
-            foreach (var file in dirInfo.GetFiles("exe"))
+            foreach (var file in dirInfo.GetFiles("*.exe"))
             {
-                if(file.Name.Equals("tempFile"))
+                if(file.Name.Equals("tempFile.exe"))
                 {
                     ic.loadAssembly(file.FullName);
                     if (ic.checkType(type))
