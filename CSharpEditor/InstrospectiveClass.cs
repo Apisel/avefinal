@@ -117,6 +117,25 @@ namespace CSharpEditor
             return assType != null;
         }
 
+        public String checkMethodParameters(String name)
+        {
+            
+            foreach (Type type in ass.GetTypes())
+            {
+                foreach (MethodInfo method in type.GetMethods())
+                {
+                    foreach (ParameterInfo parameter in method.GetParameters())
+                    {
+                        if (parameter.Name.Equals(name))
+                            return parameter.GetType().FullName;
+                    }
+                }
+            }
+
+            return null;
+         
+        }
+
         public String[] getMembersByString(String type, bool isStatic)
         {
             Type assType = ass.GetType(type);

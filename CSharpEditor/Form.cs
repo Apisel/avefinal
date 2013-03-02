@@ -105,12 +105,15 @@ namespace CSharpEditor
             int i = editorPane.GetLineFromCharIndex(editorPane.SelectionStart);
             int subS = listBoxAutoComplete.Items[index].ToString().LastIndexOf('.');
             String toAdd = listBoxAutoComplete.Items[index].ToString().Substring(subS + 1).Trim();
+            
 
             if ((subS = toAdd.IndexOf(" ")) != -1)
-            {
-                toAdd = toAdd.Substring(subS);
+            {                
+                toAdd = toAdd.Substring(subS+1);
+                
             }
-
+            toAdd = Regex.Replace(toAdd, " ", "");
+            
             editorPane.Text = editorPane.Text.Insert(editorPane.SelectionStart, toAdd);
             editorPane.SelectionStart = cursorPos + toAdd.Length;
             Clear();
@@ -126,6 +129,7 @@ namespace CSharpEditor
             caretPos.Y = ln;
             string lnColString = "Ln: " + ln.ToString() + " Col: " + cn.ToString();
             statusStrip.Items[0].Text = lnColString;
+            
         }
 
         private void Clear()
@@ -156,7 +160,9 @@ namespace CSharpEditor
                     line = line.Trim();
                     String[] s = line.Split('=');
                     s = s[0].Split(' ');
-                    getTypeAndName((s.Length > 2) ? s[1] + " " + s[2] : s[0] + " " + s[1]);
+                    //getTypeAndName((s.Length > 2) ? s[1] + " " + s[2] : s[0] + " " + s[1]);
+                    if(s.Length>1)//no caso de ser metodo
+                    getTypeAndName(s[s.Length-2] + " " + s[s.Length-1]);
                 }
             }
             else
@@ -167,10 +173,11 @@ namespace CSharpEditor
                     {
 
                         String[] s = line.Split('=');
-                        if (s.Length != 1)
+                        if (s.Length > 1)//no caso de ser metodo
                         {
                             s = s[0].Trim().Split(' ');
-                            getTypeAndName((s.Length > 2) ? s[1] + " " + s[2] : s[0] + " " + s[1]);
+                            //getTypeAndName((s.Length > 2) ? s[1] + " " + s[2] : s[0] + " " + s[1]);
+                            getTypeAndName(s[s.Length - 2] + " " + s[s.Length - 1]);
                         }
                     }
 
@@ -192,7 +199,9 @@ namespace CSharpEditor
                 {
                     editorPane.SaveFile(fs, RichTextBoxStreamType.PlainText);
                 }
+                statusStrip.Items[0].Text = "Ficheiro salvo com sucesso";
             }
+            else statusStrip.Items[0].Text = "Salvamento abortado";
             Console.WriteLine("save");
         }
 
@@ -210,8 +219,9 @@ namespace CSharpEditor
                     editorPane.LoadFile(fs, RichTextBoxStreamType.PlainText);
                 }
                 isLoading = false;
+                statusStrip.Items[0].Text = "Ficheiro carregado com sucesso";
             }
-
+            else statusStrip.Items[0].Text = "Carregamento abortado";
 
             Console.WriteLine("load");
         }
@@ -256,12 +266,13 @@ namespace CSharpEditor
                                                                   out compilerResults))
                         {
                             lastLocationCompiled = exeFile;
+
+                            statusStrip.Items[0].Text = "Compilado com sucesso";
                             errorsList.Clear();
-                            errorsList.AppendText("Compilado com sucesso");
                         }
                         else
                         {
-                            errorsList.Clear();
+                            statusStrip.Items[0].Text = "Falha na Compilação";
                             errorsList.AppendText(errors);
                         }
                     }
@@ -275,22 +286,26 @@ namespace CSharpEditor
                                                                   out compilerResults))
                         {
                             lastLocationCompiled = assemblyName;
+
+                            statusStrip.Items[0].Text = "Compilado com sucesso";
                             errorsList.Clear();
-                            errorsList.AppendText("Compilado com sucesso");
+                        }
+                        else
+                        {
+                            statusStrip.Items[0].Text = "Falha na Compilação";
+                            errorsList.AppendText(errors);
                         }
                     }
                 }
                 else
                 {
-                    errorsList.Clear();
-                    errorsList.AppendText("Guarde o Ficheiro Primeiro!");
+                    statusStrip.Items[0].Text = "Guarde o Ficheiro Primeiro!";
                 }
 
             }
             else
             {
-                errorsList.Clear();
-                errorsList.AppendText("Guarde o Ficheiro Primeiro!");
+                statusStrip.Items[0].Text = "Guarde o Ficheiro Primeiro!";
             }
             Console.WriteLine("compileButton");
         }
@@ -334,8 +349,7 @@ namespace CSharpEditor
                 proc.StartInfo.FileName = lastLocationCompiled;
                 proc.Start();
 
-                errorsList.Clear();
-                errorsList.AppendText("Programa Executado");
+                statusStrip.Items[0].Text = "Programa Executado";
 
                 proc.WaitForExit();
                 var exitCode = proc.ExitCode;
@@ -344,8 +358,7 @@ namespace CSharpEditor
             }
             else
             {
-                errorsList.Clear();
-                errorsList.AppendText("O ficheiro destino não pode ser executado\n (é um ficheiro dll?)");
+                statusStrip.Items[0].Text = "O ficheiro destino não pode ser executado\n (é um ficheiro dll?)";
             }
         }
 
@@ -366,8 +379,9 @@ namespace CSharpEditor
                         assemblyRefsComboBox.Items.Add(fileName.Substring(fileName.LastIndexOf("\\")));
                     }
                 }
+                statusStrip.Items[0].Text = "Bibliotecas carregadas com sucesso";
             }
-
+            else statusStrip.Items[0].Text = "Carregamento abortado";
 
             Console.WriteLine("addAssemblyRefButton");
         }
@@ -407,7 +421,15 @@ namespace CSharpEditor
             lastLocationCompiled = null;
             editorPane.Clear();
             clearDictionary();
+            errorsList.Clear();
+            statusStrip.Items[0].Text = "Código limpo";
             Console.WriteLine("newFileButton");
+            if(listBoxAutoComplete.Visible)
+            {
+                Clear();
+                listBoxAutoComplete.Hide();
+
+            }
         }
 
         private void listBoxAutoComplete_Click(object sender, EventArgs e)
@@ -643,7 +665,7 @@ namespace CSharpEditor
 
                 if (ic.checkType(type))
                     return true;
-
+                
             }
 
             //verificar tipos definidos no proprio editorPane;
@@ -657,8 +679,6 @@ namespace CSharpEditor
                         return true;
                 }
             }
-
-
 
             return false;
 
