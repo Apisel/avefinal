@@ -31,7 +31,7 @@ namespace CSharpEditor
         {
             foreach (var evt in type.GetEvents(bf))
             {
-                yield return "Event: "+ evt.Name;
+                yield return "Event: " + evt.Name;
             }
 
         }
@@ -41,7 +41,7 @@ namespace CSharpEditor
 
             foreach (var f in type.GetFields(bf))
             {
-                yield return "Field: "+f.Name;
+                yield return "Field: " + f.Name;
             }
 
         }
@@ -51,7 +51,7 @@ namespace CSharpEditor
             String aux;
             foreach (var methodName in type.GetMethods(bf))
             {
-                aux = "Method: "+methodName.ReturnType + " " + methodName.Name + " (";
+                aux = "Method: " + methodName.ReturnType + " " + methodName.Name + " (";
                 foreach (var param in methodName.GetParameters())
                 {
                     aux = aux + param.Name;
@@ -69,7 +69,7 @@ namespace CSharpEditor
             String aux;
             foreach (var prop in type.GetProperties(bf))
             {
-                aux = "Property: "+prop.Name + " [";
+                aux = "Property: " + prop.Name + " [";
                 foreach (var param in prop.GetIndexParameters())
                 {
                     aux = aux + param.Name;
@@ -85,14 +85,14 @@ namespace CSharpEditor
         {
             foreach (var nt in type.GetNestedTypes(bf))
             {
-                yield return "Nested Type: "+ nt.Name;
+                yield return "Nested Type: " + nt.Name;
             }
         }
 
         public String[] getMembers(Type type, bool isStatic)
         {
             BindingFlags bf = BindingFlags.Public;
-            if (isStatic) bf = bf | BindingFlags.Static;
+            if (isStatic) bf = bf | BindingFlags.Static | BindingFlags.FlattenHierarchy;
             else bf = bf | BindingFlags.Instance;
 
             List<String> membersList = new List<String>();
@@ -119,7 +119,7 @@ namespace CSharpEditor
 
         public String checkMethodParameters(String name)
         {
-            
+
             foreach (Type type in ass.GetTypes())
             {
                 foreach (MethodInfo method in type.GetMethods())
@@ -127,13 +127,14 @@ namespace CSharpEditor
                     foreach (ParameterInfo parameter in method.GetParameters())
                     {
                         if (parameter.Name.Equals(name))
-                            return parameter.GetType().FullName;
+                            return parameter.ParameterType.FullName;
+
                     }
                 }
             }
 
             return null;
-         
+
         }
 
         public String[] getMembersByString(String type, bool isStatic)

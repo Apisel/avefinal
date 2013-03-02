@@ -79,8 +79,12 @@ namespace CSharpEditor
             this.listBoxAutoComplete.Width = 230;
             this.listBoxAutoComplete.BringToFront();
             this.listBoxAutoComplete.Show();
-            this.listBoxAutoComplete.Select();
-            this.listBoxAutoComplete.SetSelected(0, true);
+            try
+            {
+                this.listBoxAutoComplete.Select();
+                this.listBoxAutoComplete.SetSelected(0, true);
+            }
+            catch { }
 
 
         }
@@ -159,9 +163,10 @@ namespace CSharpEditor
                 {
                     line = line.Trim();
                     String[] s = line.Split('=');
+                    s[0] = s[0].Trim();
                     s = s[0].Split(' ');
                     //getTypeAndName((s.Length > 2) ? s[1] + " " + s[2] : s[0] + " " + s[1]);
-                    if(s.Length>1)//no caso de ser metodo
+                    if(s.Length>1)//no caso de nao ser metodo
                     getTypeAndName(s[s.Length-2] + " " + s[s.Length-1]);
                 }
             }
@@ -467,27 +472,31 @@ namespace CSharpEditor
 
         private void displayAutoCompleteBox(String currentLine)
         {
-
-            //Falta cobrir um type do tipo "Namespace.Type"
+                       
             if (currentLine == null)
                 return;
-
-            //Isto pode dar dar bugs
+                        
             String[] wordsInLine = currentLine.Split('.');
             String fullTypeOfAWord;
-
-            
-            if (variableTypesInfo.ContainsKey(wordsInLine[wordsInLine.Length - 1].Trim()))
+            String unknown = wordsInLine[wordsInLine.Length - 1].Trim();
+            int i;
+            if ((i = unknown.IndexOf("=")) != -1)
+            {
+                unknown = unknown.Substring(i + 1);
+                unknown = unknown.Trim();
+            }
+            //ver para variaveis ou constantes
+            if (variableTypesInfo.ContainsKey(unknown))
             {
                 isStatic = false;
-                fullTypeOfAWord = variableTypesInfo[wordsInLine[wordsInLine.Length - 1].Trim()];//(Type)t;
+                fullTypeOfAWord = variableTypesInfo[unknown];//(Type)t;
             }
             else
             {
                 try
                 {
                     isStatic = true;
-                    fullTypeOfAWord = getFullNameOfType(wordsInLine[wordsInLine.Length - 1].Trim());
+                    fullTypeOfAWord = getFullNameOfType(unknown); // ve os using e o assemblies
                     //Ver se é de um tipo definido no editorPane
                 }
                 catch (ArgumentNullException)
@@ -496,14 +505,22 @@ namespace CSharpEditor
                     return;
                 }
             }
+
+            //ver para parametros
+            String temp;
+            if ((temp = getParameterFromAssemblies(unknown))!=null)
+                fullTypeOfAWord=temp;
+
             if (fullTypeOfAWord == null) return;
 
 
-            if (!this.listBoxAutoComplete.Visible)
+            //ver para tipos são/definidos tipos primitivos, em namespaces ou bibliotecas
+            if (!this.listBoxAutoComplete.Visible) 
             {
 
                 this.listBoxAutoComplete.Items.Clear();
                 // Populate the Auto Complete list box
+                
                 Type type;
                 if ((type = Type.GetType(fullTypeOfAWord)) == null)
                 {
@@ -655,10 +672,7 @@ namespace CSharpEditor
 
             ic = (InstrospectiveClass)ap.CreateInstanceAndUnwrap(
             Assembly.GetExecutingAssembly().FullName, "CSharpEditor.InstrospectiveClass");
-
             
-
-            //foreach (FileInfo f in dirInfo.GetFiles("dll")) // | .exe"
             foreach (String s in referencedAssemblies) 
             {
                 ic.loadAssembly(s);
@@ -682,6 +696,33 @@ namespace CSharpEditor
 
             return false;
 
+        }
+
+        private String getParameterFromAssemblies(String param)
+        {
+            
+            foreach (String s in referencedAssemblies)
+            {
+                ic.loadAssembly(s);
+                String aux;
+                if ((aux = ic.checkMethodParameters(param))!=null)
+                    return aux;
+
+            }
+            
+            DirectoryInfo dirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+            foreach (var file in dirInfo.GetFiles("*.exe"))
+            {
+                if (file.Name.Equals("tempFile.exe"))
+                {
+                    ic.loadAssembly(file.FullName);
+                    String aux;
+                    if ((aux = ic.checkMethodParameters(param)) != null)
+                        return aux;
+                }
+            }
+            
+            return null;
         }
 
         private void addToListBoxAutoCompleteRef(InstrospectiveClass ic, String toExtractMembers)
